@@ -15,7 +15,6 @@ class UsuarioController {
     async createUser(req, res) {
         try {
             const { cedula,nombre_usuario, nombre_completo, email, contraseña, telefono, direccion_envio, email_facturacion, imagen, rol } = req.body;
-            // Encriptar la contraseña
             const salt = await bcrypt.genSalt(10);
             const contraseñaEncriptada = await bcrypt.hash(contraseña, salt);
     
