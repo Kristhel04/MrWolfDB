@@ -14,17 +14,17 @@ class UsuarioController {
 
     async createUser(req, res) {
         try {
-            const { nombre_usuario, nombre_completo, email, contraseña, cedula, telefono, direccion_envio, email_facturacion, imagen, rol } = req.body;
+            const { cedula,nombre_usuario, nombre_completo, email, contraseña, telefono, direccion_envio, email_facturacion, imagen, rol } = req.body;
             // Encriptar la contraseña
             const salt = await bcrypt.genSalt(10);
             const contraseñaEncriptada = await bcrypt.hash(contraseña, salt);
     
             const nuevoUsuario = await Usuario.create({
+                cedula,
                 nombre_usuario,
                 nombre_completo,
                 email,
                 contraseña: contraseñaEncriptada, 
-                cedula,
                 telefono,
                 direccion_envio,
                 email_facturacion,
@@ -40,8 +40,8 @@ class UsuarioController {
     
     async getUserById(req, res) {
         try {
-            const { id } = req.params;
-            const usuario = await Usuario.findByPk(id);
+            const { cedula } = req.params;
+            const usuario = await Usuario.findByPk(cedula);
             if (!usuario) {
                 return res.status(404).json({ message: "Usuario no encontrado" });
             }
@@ -54,10 +54,10 @@ class UsuarioController {
 
     async updateUser(req, res) {
         try {
-            const { id } = req.params;
-            const { nombre_usuario, nombre_completo, email, contraseña, cedula, telefono, direccion_envio, email_facturacion, imagen, rol } = req.body;
+            const { cedula } = req.params;
+            const { nombre_usuario, nombre_completo, email, contraseña,telefono, direccion_envio, email_facturacion, imagen, rol } = req.body;
 
-            const usuario = await Usuario.findByPk(id);
+            const usuario = await Usuario.findByPk(cedula);
             if (!usuario) {
                 return res.status(404).json({ message: "Usuario no encontrado" });
             }
@@ -74,7 +74,6 @@ class UsuarioController {
                 nombre_completo,
                 email,
                 contraseña: nuevaContraseña || usuario.contraseña, // Usar la nueva contraseña encriptada o la existente
-                cedula,
                 telefono,
                 direccion_envio,
                 email_facturacion,
@@ -108,7 +107,7 @@ class UsuarioController {
             // Generar token JWT
             const token = jwt.sign(
                 {
-                    id_usuario: usuario.id_usuario,
+                    cedula: usuario.cedula,
                     rol: usuario.rol
                 },
                 process.env.JWT_SECRET, 
@@ -120,7 +119,7 @@ class UsuarioController {
                 message: "Login exitoso",
                 token,
                 usuario: {
-                    id_usuario: usuario.id_usuario,
+                    cedula: usuario.cedula,
                     nombre_completo: usuario.nombre_completo,
                     rol: usuario.rol
                 }
@@ -132,8 +131,8 @@ class UsuarioController {
     }
     async deleteUser(req, res) {
         try {
-            const { id } = req.params;
-            const usuario = await Usuario.findByPk(id);
+            const { cedula } = req.params;
+            const usuario = await Usuario.findByPk(cedula);
             if (!usuario) {
                 return res.status(404).json({ message: "Usuario no encontrado" });
             }

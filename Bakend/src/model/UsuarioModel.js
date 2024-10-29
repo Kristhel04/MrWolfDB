@@ -5,9 +5,10 @@ import sequelize from '../baseDatos/connection.js';
 class Usuario extends Model {}
 
 Usuario.init({
-    id_usuario: {
-        type: DataTypes.INTEGER,
-        autoIncrement: true,
+    cedula: {
+        type: DataTypes.STRING,
+        allowNull: false,
+        unique: true,
         primaryKey: true
     },
     nombre_usuario: {
@@ -26,11 +27,6 @@ Usuario.init({
     contraseña: {
         type: DataTypes.STRING,
         allowNull: false
-    },
-    cedula: {
-        type: DataTypes.STRING,
-        allowNull: false,
-        unique: true
     },
     telefono: {
         type: DataTypes.STRING,
