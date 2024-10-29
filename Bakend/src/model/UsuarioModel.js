@@ -7,9 +7,9 @@ class Usuario extends Model {}
 Usuario.init({
     cedula: {
         type: DataTypes.STRING,
-        allowNull: false,
         unique: true,
-        primaryKey: true
+        primaryKey: true,
+        allowNull: false
     },
     nombre_usuario: {
         type: DataTypes.STRING,

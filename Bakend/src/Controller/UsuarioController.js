@@ -38,9 +38,9 @@ class UsuarioController {
         }
     }
     
-    async getUserById(req, res) {
+    async getUserById(req,res) {
         try {
-            const { cedula } = req.params;
+            const {cedula} = req.params;
             const usuario = await Usuario.findByPk(cedula);
             if (!usuario) {
                 return res.status(404).json({ message: "Usuario no encontrado" });
@@ -54,38 +54,40 @@ class UsuarioController {
 
     async updateUser(req, res) {
         try {
-            const { cedula } = req.params;
-            const { nombre_usuario, nombre_completo, email, contraseña,telefono, direccion_envio, email_facturacion, imagen, rol } = req.body;
-
-            const usuario = await Usuario.findByPk(cedula);
+            let { cedula } = req.params;
+            cedula = cedula.trim();  
+            
+            const { nombre_usuario, nombre_completo, email, contraseña, telefono, direccion_envio, email_facturacion, imagen, rol } = req.body;
+    
+            const usuario = await Usuario.findOne({ where: { cedula } });
             if (!usuario) {
                 return res.status(404).json({ message: "Usuario no encontrado" });
             }
-
-            // Encriptar la nueva contraseña si se proporciona
+    
             let nuevaContraseña;
             if (contraseña) {
                 const salt = await bcrypt.genSalt(10);
                 nuevaContraseña = await bcrypt.hash(contraseña, salt);
             }
-
+    
             await usuario.update({
                 nombre_usuario,
                 nombre_completo,
                 email,
-                contraseña: nuevaContraseña || usuario.contraseña, // Usar la nueva contraseña encriptada o la existente
+                contraseña: nuevaContraseña || usuario.contraseña,
                 telefono,
                 direccion_envio,
                 email_facturacion,
                 imagen,
                 rol
             });
-
+    
             res.json({ message: "Usuario actualizado", usuario });
         } catch (error) {
             res.status(500).json({ message: "Error al actualizar el usuario", error });
         }
     }
+    
     async login(req, res) {
         const { email, contraseña } = req.body;
         
