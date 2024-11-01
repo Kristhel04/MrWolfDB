@@ -14,16 +14,17 @@ class UsuarioController {
 
     async createUser(req, res) {
         try {
-            const { cedula,nombre_usuario, nombre_completo, email, contraseña, telefono, direccion_envio, email_facturacion, imagen, rol } = req.body;
+            console.log('Datos recibidos:', req.body);
+            const { cedula,nombre_usuario, nombre_completo, email, contrasena, telefono, direccion_envio, email_facturacion, imagen, rol } = req.body;
             const salt = await bcrypt.genSalt(10);
-            const contraseñaEncriptada = await bcrypt.hash(contraseña, salt);
+            const contraseñaEncriptada = await bcrypt.hash(contrasena, salt);
     
             const nuevoUsuario = await Usuario.create({
                 cedula,
                 nombre_usuario,
                 nombre_completo,
                 email,
-                contraseña: contraseñaEncriptada, 
+                contrasena: contraseñaEncriptada,  
                 telefono,
                 direccion_envio,
                 email_facturacion,

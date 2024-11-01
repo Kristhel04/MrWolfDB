@@ -24,7 +24,7 @@ Usuario.init({
         allowNull: false,
         unique: true
     },
-    contraseña: {
+    contrasena: {
         type: DataTypes.STRING,
         allowNull: false
     },
