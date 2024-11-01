@@ -6,10 +6,11 @@ const router = Router();
 
 // Definir rutas y asociarlas a los métodos del controlador
 router.get('/usuarios', authenticateToken, authorizeRole(['Administrador']), UsuarioController.getAllUsers);
+//router.get('/usuarios',UsuarioController.getAllUsers);
 router.post('/usuarios', UsuarioController.createUser);
-router.get('/usuarios/:id', authenticateToken, authorizeRole(['Administrador']), UsuarioController.getUserById);
-router.put('/usuarios/:id', UsuarioController.updateUser);
-router.delete('/usuarios/:id', authenticateToken, authorizeRole(['Administrador']), UsuarioController.deleteUser);
+router.get('/usuarios/:cedula', authenticateToken, authorizeRole(['Administrador']), UsuarioController.getUserById);
+router.put('/usuarios/:cedula', UsuarioController.updateUser);
+router.delete('/usuarios/:cedula', authenticateToken, authorizeRole(['Administrador']), UsuarioController.deleteUser);
 router.post('/login', UsuarioController.login);
 
 

@@ -14,17 +14,16 @@ class UsuarioController {
 
     async createUser(req, res) {
         try {
-            const { nombre_usuario, nombre_completo, email, contraseña, cedula, telefono, direccion_envio, email_facturacion, imagen, rol } = req.body;
-            // Encriptar la contraseña
+            const { cedula,nombre_usuario, nombre_completo, email, contraseña, telefono, direccion_envio, email_facturacion, imagen, rol } = req.body;
             const salt = await bcrypt.genSalt(10);
             const contraseñaEncriptada = await bcrypt.hash(contraseña, salt);
     
             const nuevoUsuario = await Usuario.create({
+                cedula,
                 nombre_usuario,
                 nombre_completo,
                 email,
                 contraseña: contraseñaEncriptada, 
-                cedula,
                 telefono,
                 direccion_envio,
                 email_facturacion,
@@ -38,10 +37,10 @@ class UsuarioController {
         }
     }
     
-    async getUserById(req, res) {
+    async getUserById(req,res) {
         try {
-            const { id } = req.params;
-            const usuario = await Usuario.findByPk(id);
+            const {cedula} = req.params;
+            const usuario = await Usuario.findByPk(cedula);
             if (!usuario) {
                 return res.status(404).json({ message: "Usuario no encontrado" });
             }
@@ -54,39 +53,40 @@ class UsuarioController {
 
     async updateUser(req, res) {
         try {
-            const { id } = req.params;
-            const { nombre_usuario, nombre_completo, email, contraseña, cedula, telefono, direccion_envio, email_facturacion, imagen, rol } = req.body;
-
-            const usuario = await Usuario.findByPk(id);
+            let { cedula } = req.params;
+            cedula = cedula.trim();  
+            
+            const { nombre_usuario, nombre_completo, email, contraseña, telefono, direccion_envio, email_facturacion, imagen, rol } = req.body;
+    
+            const usuario = await Usuario.findOne({ where: { cedula } });
             if (!usuario) {
                 return res.status(404).json({ message: "Usuario no encontrado" });
             }
-
-            // Encriptar la nueva contraseña si se proporciona
+    
             let nuevaContraseña;
             if (contraseña) {
                 const salt = await bcrypt.genSalt(10);
                 nuevaContraseña = await bcrypt.hash(contraseña, salt);
             }
-
+    
             await usuario.update({
                 nombre_usuario,
                 nombre_completo,
                 email,
-                contraseña: nuevaContraseña || usuario.contraseña, // Usar la nueva contraseña encriptada o la existente
-                cedula,
+                contraseña: nuevaContraseña || usuario.contraseña,
                 telefono,
                 direccion_envio,
                 email_facturacion,
                 imagen,
                 rol
             });
-
+    
             res.json({ message: "Usuario actualizado", usuario });
         } catch (error) {
             res.status(500).json({ message: "Error al actualizar el usuario", error });
         }
     }
+    
     async login(req, res) {
         const { email, contraseña } = req.body;
         
@@ -108,7 +108,7 @@ class UsuarioController {
             // Generar token JWT
             const token = jwt.sign(
                 {
-                    id_usuario: usuario.id_usuario,
+                    cedula: usuario.cedula,
                     rol: usuario.rol
                 },
                 process.env.JWT_SECRET, 
@@ -120,7 +120,7 @@ class UsuarioController {
                 message: "Login exitoso",
                 token,
                 usuario: {
-                    id_usuario: usuario.id_usuario,
+                    cedula: usuario.cedula,
                     nombre_completo: usuario.nombre_completo,
                     rol: usuario.rol
                 }
@@ -132,8 +132,8 @@ class UsuarioController {
     }
     async deleteUser(req, res) {
         try {
-            const { id } = req.params;
-            const usuario = await Usuario.findByPk(id);
+            const { cedula } = req.params;
+            const usuario = await Usuario.findByPk(cedula);
             if (!usuario) {
                 return res.status(404).json({ message: "Usuario no encontrado" });
             }

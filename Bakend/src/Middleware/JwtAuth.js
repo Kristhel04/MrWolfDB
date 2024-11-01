@@ -21,7 +21,7 @@ export const authenticateToken = (req, res, next) => {
 // Middleware para autorizar roles específicos
 export const authorizeRole = (rolesPermitidos) => {
     return (req, res, next) => {
-        const { rol } = req.user; // El rol fue añadido en authenticateToken
+        const { rol } = req.user; 
         console.log("Rol recibido:", rol);
         if (!rolesPermitidos.includes(rol)) {
             return res.status(403).json({ message: 'Acceso denegado' });
