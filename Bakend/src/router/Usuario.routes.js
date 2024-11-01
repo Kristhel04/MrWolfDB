@@ -15,4 +15,5 @@ router.delete('/usuarios/:cedula', UsuarioController.deleteUser);
 router.post('/login', UsuarioController.login);
 
 
+
 export default router;

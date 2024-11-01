@@ -89,23 +89,24 @@ class UsuarioController {
     }
     
     async login(req, res) {
-        const { email, contraseña } = req.body;
-        
+        console.log('Datos recibidos:', req.body);
+        const { email, contrasena } = req.body;
+    
         try {
             // Buscar usuario por email
             const usuario = await Usuario.findOne({ where: { email } });
-            
+    
             if (!usuario) {
                 return res.status(404).json({ message: "Usuario no encontrado" });
             }
-            
+    
             // Comparar la contraseña
-            const match = await bcrypt.compare(contraseña, usuario.contraseña);
-            
+            const match = await bcrypt.compare(contrasena, usuario.contrasena);
+    
             if (!match) {
                 return res.status(401).json({ message: "Contraseña incorrecta" });
             }
-            
+    
             // Generar token JWT
             const token = jwt.sign(
                 {
@@ -113,10 +114,11 @@ class UsuarioController {
                     rol: usuario.rol
                 },
                 process.env.JWT_SECRET, 
-                { expiresIn: '1h' },// El token expira en 1 hora
-                console.log("JWT_SECRET:", process.env.JWT_SECRET)
+                { expiresIn: '1h' } // El token expira en 1 hora
             );
-            
+    
+            console.log("JWT_SECRET:", process.env.JWT_SECRET); // Mueve el console.log fuera de jwt.sign
+    
             res.json({
                 message: "Login exitoso",
                 token,
@@ -131,6 +133,9 @@ class UsuarioController {
             res.status(500).json({ message: "Error en el login", error });
         }
     }
+    
+
+
     async deleteUser(req, res) {
         try {
             const { cedula } = req.params;
