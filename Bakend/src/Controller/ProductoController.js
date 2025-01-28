@@ -18,12 +18,70 @@ const ProductoController = {
             if (producto) {
                 res.status(200).json(producto);
             } else {
-                res.status(404).json({ message: 'Categoría no encontrada' });
+                res.status(404).json({ message: 'Producto no encontrado' });
             }
         } catch (error) {
             res.status(500).json({ message: 'Error al obtener el producto', error });
         }
     },
+    async create(req, res) {
+        try {
+            const { nombre, precio, descripcion, talla, estado, imagen, genero_dirigido, id_Categoria} = req.body;
+            const nuevaProducto = await Producto.create({
+                 nombre, 
+                 precio,
+                 descripcion,
+                 talla,
+                 estado,
+                imagen,
+                genero_dirigido,
+                id_Categoria
+                });
+            res.status(201).json(nuevaProducto);
+        } catch (error) {
+            res.status(500).json({ message: 'Error al agregar el producto', error });
+        }
+    },
+
+    async update(req, res) {
+        try {
+            const { id } = req.params;
+            const { nombre, precio, descripcion, talla, estado, imagen, genero_dirigido, id_Categoria} = req.body;
+            const producto = await Producto.findByPk(id);
+            if (producto) {
+                await Producto.update({
+                 nombre, 
+                 precio,
+                 descripcion,
+                 talla,
+                 estado,
+                imagen,
+                genero_dirigido,
+                id_Categoria
+                });
+            res.status(201).json(producto);
+        } else {
+            res.status(404).json({ message: 'Producto no encontrado' });
+        }
+        } catch (error) {
+            res.status(500).json({ message: 'Error al actualizar el producto', error });
+        }
+    },
+
+    async delete(req, res) {
+        try {
+            const { id } = req.params;
+            const producto = await Producto.findByPk(id);
+            if (producto) {
+                await producto.destroy();
+                res.status(200).json({ message: 'Producto eliminado correctamente' });
+            } else {
+                res.status(404).json({ message: 'Producto no encontrado' });
+            }
+        } catch (error) {
+            res.status(500).json({ message: 'Error al eliminar el Producto', error });
+        }
+    }
 };
 
 export default ProductoController;
