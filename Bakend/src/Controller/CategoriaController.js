@@ -42,7 +42,6 @@ const CategoriaController = {
         }
     },
 
-    // Actualizar una categoría
     async update(req, res) {
         try {
             const { id } = req.params;
@@ -63,7 +62,6 @@ const CategoriaController = {
         }
     },
 
-    // Eliminar una categoría
     async delete(req, res) {
         try {
             const { id } = req.params;
