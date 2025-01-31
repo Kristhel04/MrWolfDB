@@ -8,7 +8,12 @@ Producto.init({
     id:{
         type: DataTypes.INTEGER,
         unique:true,
+        autoIncrement: true,
         primaryKey: true
+    },
+    codigo:{
+        type: DataTypes.STRING,
+        allowNull: true
     },
     nombre:{
         type: DataTypes.STRING,
@@ -24,11 +29,11 @@ Producto.init({
     },
     talla:{
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     estado:{
         type: DataTypes.STRING,
-        allowNull: false
+        allowNull: true
     },
     imagen:{
         type: DataTypes.STRING,

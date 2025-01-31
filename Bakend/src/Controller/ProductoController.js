@@ -1,4 +1,4 @@
-import Producto from "../model/ProductoModel";
+import Producto from "../model/ProductoModel.js";
 
 const ProductoController = {
 
@@ -27,27 +27,37 @@ const ProductoController = {
     
     async create(req, res) {
         try {
-            const { nombre, precio, descripcion, talla, estado, imagen, genero_dirigido, id_Categoria} = req.body;
+            const { codigo, nombre, precio, descripcion, talla, estado, imagen, genero_dirigido, id_Categoria } = req.body;
             const nuevaProducto = await Producto.create({
-                 nombre, 
-                 precio,
-                 descripcion,
-                 talla,
-                 estado,
+                codigo,
+                nombre,
+                precio,
+                descripcion,
+                talla,
+                estado,
                 imagen,
                 genero_dirigido,
                 id_Categoria
-                });
-            res.status(201).json(nuevaProducto);
+            });
+            
+            // Agregar mensaje de éxito
+            res.status(201).json({
+                message: 'Producto agregado correctamente',
+                producto: nuevaProducto
+            });
         } catch (error) {
-            res.status(500).json({ message: 'Error al agregar el producto', error });
+            res.status(500).json({ 
+                message: 'Error al agregar el producto', 
+                error 
+            });
         }
     },
+    
 
     async update(req, res) {
         try {
             const { id } = req.params;
-            const { nombre, precio, descripcion, talla, estado, imagen, genero_dirigido, id_Categoria } = req.body;
+            const { codigo, nombre, precio, descripcion, talla, estado, imagen, genero_dirigido, id_Categoria } = req.body;
             const producto = await Producto.findByPk(id);
     
             if (!producto) {
@@ -55,7 +65,7 @@ const ProductoController = {
             }
     
             await Producto.update(
-                { nombre, precio, descripcion, talla, estado, imagen, genero_dirigido, id_Categoria },
+                { codigo,nombre, precio, descripcion, talla, estado, imagen, genero_dirigido, id_Categoria },
                 { where: { id } }
             );
     
