@@ -27,7 +27,11 @@ const ProductoController = {
     
     async create(req, res) {
         try {
-            const { codigo, nombre, precio, descripcion, talla, estado, imagen, genero_dirigido, id_Categoria } = req.body;
+            console.log('Datos recibidos:', req.body);
+            const { codigo, nombre, precio, descripcion, talla, estado, imagen, genero_dirigido, id_categoria } = req.body;
+            if (!id_categoria) {
+                return res.status(400).json({ message: "El campo id_categoria es obligatorio." });
+            }
             const nuevaProducto = await Producto.create({
                 codigo,
                 nombre,
@@ -37,7 +41,7 @@ const ProductoController = {
                 estado,
                 imagen,
                 genero_dirigido,
-                id_Categoria
+                id_categoria
             });
             
             // Agregar mensaje de éxito
@@ -46,18 +50,18 @@ const ProductoController = {
                 producto: nuevaProducto
             });
         } catch (error) {
-            res.status(500).json({ 
-                message: 'Error al agregar el producto', 
-                error 
-            });
+            console.error("Error en create:", error);
+            res.status(500).json({ message: 'Error al agregar el producto', error: error.message });
         }
+
+
     },
     
 
     async update(req, res) {
         try {
             const { id } = req.params;
-            const { codigo, nombre, precio, descripcion, talla, estado, imagen, genero_dirigido, id_Categoria } = req.body;
+            const { codigo, nombre, precio, descripcion, talla, estado, imagen, genero_dirigido, id_categoria } = req.body;
             const producto = await Producto.findByPk(id);
     
             if (!producto) {
@@ -65,7 +69,7 @@ const ProductoController = {
             }
     
             await Producto.update(
-                { codigo,nombre, precio, descripcion, talla, estado, imagen, genero_dirigido, id_Categoria },
+                { codigo,nombre, precio, descripcion, talla, estado, imagen, genero_dirigido, id_categoria },
                 { where: { id } }
             );
     
