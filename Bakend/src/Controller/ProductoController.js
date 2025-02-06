@@ -11,10 +11,27 @@ const ProductoController = {
         }
     },
 
-    async getById(req, res) {
+    async busqueda(req, res) {
         try {
-            const { id } = req.params;
-            const producto = await Producto.findByPk(id);
+            const { nombre, codigo } = req.body;
+    
+            // Verificar si se proporcionó `nombre` o `codigo`
+            if (!nombre && !codigo) {
+                return res.status(400).json({ message: 'Debes proporcionar un nombre o un código para buscar el producto' });
+            }
+    
+            //  condiciones de búsqueda
+            const condiciones = {};
+            if (nombre) {
+                condiciones.nombre = nombre;
+            }
+            if (codigo) {
+                condiciones.codigo = codigo;
+            }
+    
+            const producto = await Producto.findOne({ where: condiciones });
+
+            // Verificar si se encontró el producto
             if (producto) {
                 res.status(200).json(producto);
             } else {
@@ -24,6 +41,7 @@ const ProductoController = {
             res.status(500).json({ message: 'Error al obtener el producto', error });
         }
     },
+    
     
     async create(req, res) {
         try {
@@ -83,18 +101,26 @@ const ProductoController = {
 
     async delete(req, res) {
         try {
-            const { id } = req.params;
-            const producto = await Producto.findByPk(id);
-            if (producto) {
-                await producto.destroy();
-                res.status(200).json({ message: 'Producto eliminado correctamente' });
+            const { codigo } = req.body; 
+    
+            if (!codigo) {
+                return res.status(400).json({ message: 'Debe proporcionar un código para eliminar productos' });
+            }
+    
+            const productos = await Producto.findAll({ where: { codigo } });
+    
+            if (productos.length > 0) {
+                // Eliminar todos los productos encontrados
+                await Producto.destroy({ where: { codigo } });
+                res.status(200).json({ message: `Se eliminaron ${productos.length} producto(s) con el código: ${codigo}` });
             } else {
-                res.status(404).json({ message: 'Producto no encontrado' });
+                res.status(404).json({ message: 'No se encontraron productos con el código especificado' });
             }
         } catch (error) {
-            res.status(500).json({ message: 'Error al eliminar el Producto', error });
+            res.status(500).json({ message: 'Error al eliminar los productos', error: error.message });
         }
     }
+    
 };
 
 export default ProductoController;
