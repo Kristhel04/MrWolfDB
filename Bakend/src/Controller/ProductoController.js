@@ -29,23 +29,23 @@ const ProductoController = {
                 condiciones.codigo = codigo;
             }
     
-            const producto = await Producto.findOne({ where: condiciones });
+            const producto = await Producto.findAll({ where: condiciones });
 
             // Verificar si se encontró el producto
             if (producto) {
                 res.status(200).json(producto);
             } else {
-                res.status(404).json({ message: 'Producto no encontrado' });
+                res.status(404).json({ message: 'Producto(s) no encontrado' });
             }
         } catch (error) {
-            res.status(500).json({ message: 'Error al obtener el producto', error });
+            res.status(500).json({ message: 'Error al obtener el producto(s)', error });
         }
     },
     
     
     async create(req, res) {
         try {
-            const { codigo, nombre, precio, descripcion, talla, estado, imagen, genero_dirigido, id_Categoria } = req.body;
+            const { codigo, nombre, precio, descripcion, talla, estado, imagen, genero_dirigido, id_categoria } = req.body;
             const nuevaProducto = await Producto.create({
                 codigo,
                 nombre,
@@ -55,7 +55,7 @@ const ProductoController = {
                 estado,
                 imagen,
                 genero_dirigido,
-                id_Categoria
+                id_categoria
             });
             
             // Agregar mensaje de éxito

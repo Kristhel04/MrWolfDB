@@ -7,7 +7,6 @@ Producto.init({
 
     id:{
         type: DataTypes.INTEGER,
-        unique:true,
         autoIncrement: true,
         primaryKey: true
     },
@@ -46,7 +45,7 @@ Producto.init({
             isIn: [['Masculino', 'Femenino']] // Valida que sea uno de estos valores
         }
     },
-    id_Categoria:{
+    id_categoria:{
         type: DataTypes.INTEGER,
         allowNull: false
     }
