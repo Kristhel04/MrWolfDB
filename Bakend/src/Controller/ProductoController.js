@@ -29,16 +29,15 @@ const ProductoController = {
                 condiciones.codigo = codigo;
             }
     
-            const producto = await Producto.findAll({ where: condiciones });
-
-            // Verificar si se encontró el producto
-            if (producto) {
-                res.status(200).json(producto);
+            const productos = await Producto.findAll({ where: condiciones });
+    
+            if (productos.length > 0) {
+                res.status(200).json(productos);
             } else {
-                res.status(404).json({ message: 'Producto(s) no encontrado' });
+                res.status(404).json({ message: 'No se encontraron productos con los criterios dados' });
             }
         } catch (error) {
-            res.status(500).json({ message: 'Error al obtener el producto(s)', error });
+            res.status(500).json({ message: 'Error al obtener los productos', error });
         }
     },
     
