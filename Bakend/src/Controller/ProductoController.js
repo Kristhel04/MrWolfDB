@@ -96,23 +96,16 @@ const ProductoController = {
 
     async delete(req, res) {
         try {
-            const { codigo } = req.body; 
-    
-            if (!codigo) {
-                return res.status(400).json({ message: 'Debe proporcionar un código para eliminar productos' });
-            }
-    
-            const productos = await Producto.findAll({ where: { codigo } });
-    
-            if (productos.length > 0) {
-                // Eliminar todos los productos encontrados
-                await Producto.destroy({ where: { codigo } });
-                res.status(200).json({ message: `Se eliminaron ${productos.length} producto(s) con el código: ${codigo}` });
+            const { id } = req.params;
+            const producto = await Producto.findByPk(id);
+            if (producto) {
+                await producto.destroy();
+                res.status(200).json({ message: 'Producto eliminado correctamente' });
             } else {
-                res.status(404).json({ message: 'No se encontraron productos con el código especificado' });
+                res.status(404).json({ message: 'Producto no encontrado' });
             }
         } catch (error) {
-            res.status(500).json({ message: 'Error al eliminar los productos', error: error.message });
+            res.status(500).json({ message: 'Error al eliminar el Producto', error });
         }
     }
     
