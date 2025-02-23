@@ -7,7 +7,6 @@ Producto.init({
 
     id:{
         type: DataTypes.INTEGER,
-        unique:true,
         autoIncrement: true,
         primaryKey: true
     },
