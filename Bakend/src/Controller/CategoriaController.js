@@ -42,18 +42,23 @@ const CategoriaController = {
     async getAll(req, res) {
         try {
             const categorias = await Categoria.findAll();
-            res.status(200).json(categorias);
+            const categoriasConImagenURL = categorias.map(categoria => ({
+                ...categoria.dataValues,
+                imagen: categoria.imagen ? `http://localhost:3000/imagenes/${categoria.imagen}` : null
+            }));
+    
+            res.status(200).json(categoriasConImagenURL);
         } catch (error) {
             res.status(500).json({ message: "Error al obtener las categorías", error });
         }
     },
-
-
+    
     async getById(req, res) {
         try {
             const { id } = req.params;
             const categoria = await Categoria.findByPk(id);
             if (categoria) {
+                categoria.imagen = categoria.imagen ? `http://localhost:3000/imagenes/${categoria.imagen}` : null;
                 res.status(200).json(categoria);
             } else {
                 res.status(404).json({ message: "Categoría no encontrada" });
