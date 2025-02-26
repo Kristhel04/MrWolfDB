@@ -5,6 +5,7 @@ import categoriasR from './router/Categoria.routes.js';
 import carritosR from "./router/Carrito.routes.js";
 import 'dotenv/config';
 import cors from 'cors';
+import path from "path";
 
 const app = express()
 app.use(cors());

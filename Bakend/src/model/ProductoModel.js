@@ -1,5 +1,6 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from '../baseDatos/connection.js';
+import Imagen from '../model/ImagenModel.js';
 
 class Producto extends Model {}
 
@@ -55,5 +56,9 @@ Producto.init({
     tableName: 'Productos',
     timestamps: false
 });
+// Relación con imágenes
+Producto.hasMany(Imagen, { foreignKey: "id_producto", as: "imagenes" });
+Imagen.belongsTo(Producto, { foreignKey: "id_producto" });
+
 
 export default Producto;
