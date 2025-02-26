@@ -10,7 +10,7 @@ import path from "path";
 const app = express()
 app.use(cors());
 app.use(express.json());
-app.use("/imagenes", express.static(path.join("public", "ImgCategorias")));
+app.use("/imagenes", express.static(path.join(process.cwd(), "public", "ImgCategorias")));
 
 app.use('/api/v1', usuariosR);
 app.use('/api/v1', productosR);
