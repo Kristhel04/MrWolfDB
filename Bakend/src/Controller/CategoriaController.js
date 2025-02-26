@@ -6,7 +6,7 @@ const CategoriaController = {
     async getAll(req, res) {
         try {
             const categorias = await Categoria.findAll();
-            res.status(200).json(categorias);
+            res.status(200).json(JSON.parse(JSON.stringify(categorias, null, 2)));
         } catch (error) {
             res.status(500).json({ message: 'Error al obtener las categorías', error });
         }

@@ -10,8 +10,11 @@ const app = express()
 app.use(cors());
 app.use(express.json());
 
+app.set('json spaces', 2);
+
 app.use('/api/v1', usuariosR);
 app.use('/api/v1', productosR);
 app.use('/api/v1', categoriasR);
 app.use('/api/v1', carritosR);
+
 export default app
