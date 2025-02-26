@@ -2,18 +2,21 @@ import { Model, DataTypes } from 'sequelize';
 import sequelize from '../baseDatos/connection.js';
 import Producto from "../model/ProductoModel.js";
 
-const Carrito = sequelize.define('Carrito', {
-    id: {
-        type: DataTypes.INTEGER,
-        primaryKey: true,
-        autoIncrement: true
-    },
-    usuarioId: {
-        type: DataTypes.INTEGER,
-        allowNull: false
-    },
+    class Carrito extends Model {}
+    
+    Carrito.init({
+        id: {
+            type: DataTypes.INTEGER,
+            primaryKey: true,
+            autoIncrement: true,
+        },
+        usuarioId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+        },
+    
     productoId: {
-        type: DataTypes.INTEGER,
+        type: DataTypes.BIGINT,
         allowNull: false,
         references: {
             model: Producto,
@@ -26,7 +29,14 @@ const Carrito = sequelize.define('Carrito', {
         defaultValue: 1
     }
 }, {
-    timestamps: true
+    sequelize,
+    modelName: 'Carrito',
+    tableName: 'Carritos',
+    timestamps: false
 });
+
+// Aquí se define la relación
+Carrito.belongsTo(Producto, { foreignKey: 'productoId' });
+Producto.hasMany(Carrito, { foreignKey: 'productoId' });
 
 export default Carrito;
