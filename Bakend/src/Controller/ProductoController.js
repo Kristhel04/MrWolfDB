@@ -123,7 +123,7 @@ const ProductoController = {
             // Eliminar imágenes antes de borrar el producto
             const imagenes = await Imagen.findAll({ where: { id_producto: id } });
             imagenes.forEach(img => {
-                const filePath = path.join("uploads", img.nomImagen);
+                const filePath = path.join("public", img.nomImagen);
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);
                 }

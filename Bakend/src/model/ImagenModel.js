@@ -1,15 +1,23 @@
-import { DataTypes } from "sequelize";
+import {Model, DataTypes } from "sequelize";
 import sequelize from '../baseDatos/connection.js';
 
-const Imagen = sequelize.define("Imagen", {
-    num_imagen: { 
+class Imagen extends Model {}
+Imagen.init({
+    num_imagen:{ 
         type: DataTypes.INTEGER, 
         primaryKey: true, 
-        autoIncrement: true },
-    id_producto: { 
+        autoIncrement: true 
+    },
+    id_producto:{ 
         type: DataTypes.INTEGER },
     nomImagen: { 
-        type: DataTypes.STRING }
+        type: DataTypes.STRING 
+    }
+},{
+    sequelize,
+    modelName: 'Imagen',
+    tableName: 'Imagen',
+    timestamps: false
 });
 
 export default Imagen;

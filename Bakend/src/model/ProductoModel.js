@@ -35,10 +35,6 @@ Producto.init({
         type: DataTypes.STRING,
         allowNull: true
     },
-    imagen:{
-        type: DataTypes.STRING,
-        allowNull: false
-    },
     genero_dirigido:{
         type: DataTypes.STRING,
         allowNull: false,

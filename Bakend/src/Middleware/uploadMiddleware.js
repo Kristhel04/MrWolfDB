@@ -3,7 +3,7 @@ import path from "path";
 import fs from "fs";
 
 // Ruta donde se guardarán las imágenes
-const uploadDir = "uploads/ImgProductos";
+const uploadDir = "public/ImgProductos";
 
 // Verificar si la carpeta existe, si no, crearla
 if (!fs.existsSync(uploadDir)) {
