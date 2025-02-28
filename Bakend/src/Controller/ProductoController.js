@@ -83,25 +83,22 @@ const ProductoController = {
 
             // Si se enviaron nuevas imágenes, eliminar las anteriores y agregar las nuevas
             if (req.files && req.files.length > 0) {
-                const imagenesAnteriores = await Imagen.findAll({ where: { id_producto: id } });
+                const imagenesViejas = await Imagen.findAll({ where: { id_producto: id } });
 
                 // Eliminar archivos de imágenes anteriores
-                imagenesAnteriores.forEach(img => {
-                    const filePath = path.join("uploads", img.nomImagen);
+                imagenesViejas.forEach(img => {
+                    const filePath = path.join("public/ImgProductos", img.nomImagen);
                     if (fs.existsSync(filePath)) {
                         fs.unlinkSync(filePath);
                     }
-                });
-
-                // Eliminar registros de imágenes antiguas
-                await Imagen.destroy({ where: { id_producto: id } });
-
+                })
                 // Guardar nuevas imágenes
-                const nuevasImagenes = req.files.map(file => ({
+                const imgNuevas = req.files.map(file => ({
                     id_producto: id,
                     nomImagen: file.filename
                 }));
-                await Imagen.bulkCreate(nuevasImagenes);
+                await Imagen.destroy({ where: { id_producto: id } });
+                await Imagen.bulkCreate(imgNuevas);
             }
 
             res.status(200).json({ message: "Producto actualizado correctamente" });
@@ -123,7 +120,7 @@ const ProductoController = {
             // Eliminar imágenes antes de borrar el producto
             const imagenes = await Imagen.findAll({ where: { id_producto: id } });
             imagenes.forEach(img => {
-                const filePath = path.join("public", img.nomImagen);
+                const filePath = path.join("public/ImgProductos", img.nomImagen);
                 if (fs.existsSync(filePath)) {
                     fs.unlinkSync(filePath);
                 }
