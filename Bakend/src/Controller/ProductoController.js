@@ -141,21 +141,27 @@ const ProductoController = {
                 where: { genero_dirigido: "Masculino" },
                 include: [{ model: Imagen, as: "imagenes" }]
             });
+            if (productos.length === 0) {
+                return res.status(404).json({ message: "No hay productos masculinos disponibles" });
+            }
             res.status(200).json(productos);
         } catch (error) {
             res.status(500).json({ message: "Error al obtener los productos masculinos", error });
         }
     },
 
-    async ProductosMasculinos(req, res) {
+    async ProductosFemeninos(req, res) {
         try {
             const productos = await Producto.findAll({
                 where: { genero_dirigido: "Femenido" },
                 include: [{ model: Imagen, as: "imagenes" }]
             });
+            if (productos.length === 0) {
+                return res.status(404).json({ message: "No hay productos femeninos disponibles" });
+            }
             res.status(200).json(productos);
         } catch (error) {
-            res.status(500).json({ message: "Error al obtener los productos masculinos", error });
+            res.status(500).json({ message: "Error al obtener los productos femeninos", error });
         }
     }
 
