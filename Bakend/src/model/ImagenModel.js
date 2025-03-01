@@ -1,5 +1,6 @@
 import {Model, DataTypes } from "sequelize";
 import sequelize from '../baseDatos/connection.js';
+import Producto from '../model/ProductoModel.js'
 
 class Imagen extends Model {}
 Imagen.init({
@@ -19,5 +20,6 @@ Imagen.init({
     tableName: 'Imagen',
     timestamps: false
 });
+Imagen.belongsTo(Producto, { foreignKey: "id_producto" });
 
 export default Imagen;

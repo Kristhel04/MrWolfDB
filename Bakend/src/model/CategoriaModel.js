@@ -1,5 +1,6 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from '../baseDatos/connection.js';
+import Producto from '../model/ProductoModel.js'
 
 class Categoria extends Model {}
 
@@ -28,5 +29,7 @@ Categoria.init({
     tableName: 'Categoria',
     timestamps: false
 });
+
+Categoria.hasMany(Producto, { foreignKey: 'id_categoria', as: 'productos' });
 
 export default Categoria;
