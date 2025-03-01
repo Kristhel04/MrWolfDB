@@ -40,7 +40,7 @@ Producto.init({
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
-            isIn: [['Masculino', 'Femenino']] // Valida que sea uno de estos valores
+            isIn: [['Masculino', 'Femenino']] 
         }
     },
     id_categoria:{
