@@ -1,5 +1,6 @@
 import Carrito from "../model/CarritoModel.js";
 import Producto from "../model/ProductoModel.js";
+
 const calcularTotal = (precio, cantidad) => {
     return precio * cantidad;
 };
@@ -42,9 +43,8 @@ const CarritoController = {
 
             res.json(productosCarrito);
         } catch (error) {
-            res.status(500).json({ message: 'Error al obtener el carrito', error });
             console.error('Error al obtener el carrito:', error);
-            res.status(500).json({ error: 'Error interno del servidor' });
+            res.status(500).json({ error: 'Error interno del servidor',error });
         }
     },
     
@@ -86,7 +86,7 @@ const CarritoController = {
     },
         
 // Modificar la cantidad de un producto en el carrito
-async updateCarrito(req, res) {
+/*async updateCarrito(req, res) {
     try {
         const { usuarioId, productoId, cantidad } = req.body;
 
@@ -97,15 +97,16 @@ async updateCarrito(req, res) {
 
         // Buscar el producto en el carrito
         const producto = await Carrito.findOne({
-            where: { usuarioId, productoId }
+            where: { usuarioId, productoId },
+            include: [{ model: Producto, attributes: ['precio'] }]
         });
 
         if (!producto) {
             return res.status(404).json({ message: 'Producto no encontrado en el carrito' });
         }
 
-        // Obtener el precio del producto
-        const precio = producto.precio; // Verifica que este campo exista
+        
+        const precio = producto?.Producto?.precio || 0;
 
         // Lógica para manejar la cantidad
         if (cantidad === 0) {
@@ -122,8 +123,29 @@ async updateCarrito(req, res) {
     } catch (error) {
         res.status(500).json({ message: 'Error al actualizar el carrito', error: error.message });
     }
-},
+},*/
 
+async updateCarrito(req, res) {
+    try {
+        const { productoId, cantidad } = req.body;
+
+        if (!productoId || cantidad == null || cantidad < 1) {
+            return res.status(400).json({ error: "Datos inválidos" });
+        }
+
+        const productoEnCarrito = await Carrito.findOne({ where: { productoId } });
+
+        if (!productoEnCarrito) {
+            return res.status(404).json({ error: "Producto no encontrado en el carrito" });
+        }
+
+        await productoEnCarrito.update({ cantidad });
+
+        res.json({ message: "Cantidad actualizada correctamente" });
+    } catch (error) {
+        res.status(500).json({ error: "Error en el servidor" });
+    }
+},
 
     // Eliminar un producto del carrito
     async removeFromCarrito(req, res) {
