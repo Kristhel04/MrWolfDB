@@ -1,5 +1,7 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from '../baseDatos/connection.js';
+import Imagen from '../model/ImagenModel.js';
+import Categoria from './model/CategoriaModel.js';
 
 class Producto extends Model {}
 
@@ -7,7 +9,6 @@ Producto.init({
 
     id:{
         type: DataTypes.INTEGER,
-        unique:true,
         autoIncrement: true,
         primaryKey: true
     },
@@ -35,18 +36,14 @@ Producto.init({
         type: DataTypes.STRING,
         allowNull: true
     },
-    imagen:{
-        type: DataTypes.STRING,
-        allowNull: false
-    },
     genero_dirigido:{
         type: DataTypes.STRING,
         allowNull: false,
         validate: {
-            isIn: [['Masculino', 'Femenino']] // Valida que sea uno de estos valores
+            isIn: [['Masculino', 'Femenino']] 
         }
     },
-    id_Categoria:{
+    id_categoria:{
         type: DataTypes.INTEGER,
         allowNull: false
     }
@@ -56,5 +53,9 @@ Producto.init({
     tableName: 'Productos',
     timestamps: false
 });
+
+Producto.belongsTo(Categoria, { foreignKey: 'id_categoria', as: 'categoria' });
+Producto.hasMany(Imagen, { foreignKey: "id_producto", as: "imagenes" });
+
 
 export default Producto;
