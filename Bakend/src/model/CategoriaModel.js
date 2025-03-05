@@ -30,6 +30,6 @@ Categoria.init({
     timestamps: false
 });
 
-Categoria.hasMany(Producto, { foreignKey: 'id_categoria', as: 'productos' });
+
 
 export default Categoria;

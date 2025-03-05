@@ -20,6 +20,6 @@ Imagen.init({
     tableName: 'Imagen',
     timestamps: false
 });
-Imagen.belongsTo(Producto, { foreignKey: "id_producto" });
+
 
 export default Imagen;
