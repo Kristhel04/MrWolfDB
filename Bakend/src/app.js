@@ -3,6 +3,7 @@ import usuariosR from './router/Usuario.routes.js';
 import productosR from './router/Producto.routes.js';
 import categoriasR from './router/Categoria.routes.js';
 import carritosR from './router/Carrito.routes.js';
+import TallaR from './router/Talla.routes.js';
 import Talla from './model/TallaModel.js';
 import sequelize from './baseDatos/connection.js';
 import ConfRelaciones from './model/Relaciones.js';
@@ -22,34 +23,9 @@ app.use('/api/v1', usuariosR);
 app.use('/api/v1', productosR);
 app.use('/api/v1', categoriasR);
 app.use('/api/v1', carritosR);
+app.use('/api/v1', TallaR);
 
 // Configurar relaciones de Sequelize
 ConfRelaciones();
-
-// Sincronizar base de datos y luego iniciar el servidor
-const startServer = async () => {
-    try {
-        await sequelize.sync(); // Sincroniza la base de datos antes de continuar
-
-        // Insertar tallas predeterminadas si no existen
-        const tallasPredeterminadas = ['XS', 'S', 'M', 'L', 'XL'];
-        await Promise.all(
-            tallasPredeterminadas.map(async (talla) => {
-                await Talla.findOrCreate({
-                    where: { nombre: talla },
-                });
-            })
-        );
-
-        console.log('Tallas predeterminadas insertadas correctamente');
-        console.log('Base de datos sincronizada');
-
-    } catch (error) {
-        console.error('Error al sincronizar la base de datos:', error);
-    }
-};
-
-// Ejecutar la función de inicio
-startServer();
 
 export default app;

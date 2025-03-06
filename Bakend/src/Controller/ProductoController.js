@@ -11,8 +11,10 @@ const ProductoController = {
     async getAll(req, res) {
         try {
             const productos = await Producto.findAll({
-                include: [{ model: Imagen, as: "imagenes" }],
-              // include: [{ model: Imagen, as: "imagenes" }]
+                include: [
+                    { model: Talla, as: "tallas" },
+                    { model: Imagen, as: "imagenes" }
+                ]
             });
             res.status(200).json(productos);
         } catch (error) {
