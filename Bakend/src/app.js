@@ -6,7 +6,7 @@ import carritosR from "./router/Carrito.routes.js";
 import Talla from './model/TallaModel.js';
 
 import sequelize from './baseDatos/connection.js';
-import ConfAsociaciones from './model/Asociaciones.js';
+import ConfRelaciones from './model/Relaciones.js';
 import 'dotenv/config';
 import cors from 'cors';
 import path from "path";
@@ -21,7 +21,7 @@ app.use('/api/v1', productosR);
 app.use('/api/v1', categoriasR);
 app.use('/api/v1', carritosR);
 
-ConfAsociaciones();
+ConfRelaciones();
 
 
 (async () => {

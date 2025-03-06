@@ -4,7 +4,7 @@ import Imagen from './ImagenModel.js';
 import Talla from './TallaModel.js';
 import ProductoTalla from'./ProductoTallaModel.js';
 
-// Definir asociaciones después de importar todos los modelos
+
 Categoria.hasMany(Producto, { foreignKey: 'id_categoria', as: 'productos' });
 Producto.belongsTo(Categoria, { foreignKey: 'id_categoria', as: 'categoria' });
 
