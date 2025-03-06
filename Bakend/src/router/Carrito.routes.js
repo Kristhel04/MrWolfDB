@@ -1,7 +1,7 @@
-import express from 'express';
+import {Router} from 'express';
 import CarritoController from '../Controller/CarritoController.js';
 
-const router = express.Router();
+const router = Router();
 
 router.get('/:usuarioId', CarritoController.getCarrito);
 router.post('/', CarritoController.addToCarrito);

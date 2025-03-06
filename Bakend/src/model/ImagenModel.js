@@ -1,6 +1,5 @@
 import {Model, DataTypes } from "sequelize";
 import sequelize from '../baseDatos/connection.js';
-import Producto from '../model/ProductoModel.js'
 
 class Imagen extends Model {}
 Imagen.init({

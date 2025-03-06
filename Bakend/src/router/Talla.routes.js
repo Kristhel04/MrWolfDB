@@ -1,4 +1,4 @@
-import { Router } from 'express';
+import {Router} from 'express';
 import TallaController from '../Controller/TallaController.js';
 
 const router = Router();

@@ -9,7 +9,7 @@ Categoria.hasMany(Producto, { foreignKey: 'id_categoria', as: 'productos' });
 Producto.belongsTo(Categoria, { foreignKey: 'id_categoria', as: 'categoria' });
 
 Producto.hasMany(Imagen, { foreignKey: "id_producto", as:'imagenes'});
-Imagen.belongsTo(Producto, { foreignKey: "id_producto",as:'productos' });
+Imagen.belongsTo(Producto, { foreignKey: "id_producto",as:'producto' });
 
 Producto.belongsToMany(Talla, { through: ProductoTalla, foreignKey: 'id_producto', as: 'tallas' });
 Talla.belongsToMany(Producto, { through: ProductoTalla, foreignKey: 'id_talla', as: 'productos' });

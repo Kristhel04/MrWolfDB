@@ -1,8 +1,5 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from '../baseDatos/connection.js';
-import Imagen from '../model/ImagenModel.js';
-import Categoria from '../model/CategoriaModel.js';
-import Talla from '../model/TallaModel.js';
 
 class Producto extends Model {}
 

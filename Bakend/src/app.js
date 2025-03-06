@@ -4,7 +4,6 @@ import productosR from './router/Producto.routes.js';
 import categoriasR from './router/Categoria.routes.js';
 import carritosR from './router/Carrito.routes.js';
 import TallaR from './router/Talla.routes.js';
-import Talla from './model/TallaModel.js';
 import sequelize from './baseDatos/connection.js';
 import ConfRelaciones from './model/Relaciones.js';
 import 'dotenv/config';
@@ -22,8 +21,9 @@ app.use('/imagenes', express.static(path.join(process.cwd(), 'public', 'ImgCateg
 app.use('/api/v1', usuariosR);
 app.use('/api/v1', productosR);
 app.use('/api/v1', categoriasR);
-app.use('/api/v1', carritosR);
 app.use('/api/v1', TallaR);
+app.use('/api/v1', carritosR);
+
 
 // Configurar relaciones de Sequelize
 ConfRelaciones();
