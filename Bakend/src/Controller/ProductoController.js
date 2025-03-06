@@ -3,6 +3,7 @@ import Imagen from "../model/ImagenModel.js";
 import fs from "fs";
 import path from "path";
 import Talla from "../model/TallaModel.js";
+import ProductoTalla from "../model/ProductoTallaModel.js";
 
 const ProductoController = {
 
@@ -11,7 +12,7 @@ const ProductoController = {
         try {
             const productos = await Producto.findAll({
                 include: [{ model: Imagen, as: "imagenes" }],
-                include: [{ model: Imagen, as: "imagenes" }]
+              // include: [{ model: Imagen, as: "imagenes" }]
             });
             res.status(200).json(productos);
         } catch (error) {
@@ -50,18 +51,21 @@ const ProductoController = {
     // Crear un nuevo producto con imágenes
     async create(req, res) {
         try {
-            const { codigo, nombre, precio, descripcion, estado, genero_dirigido, id_categoria } = req.body;
+            const { codigo, nombre, precio, descripcion, estado, genero_dirigido, id_categoria, tallas } = req.body;
+    
             const nuevoProducto = await Producto.create({
                 codigo, nombre, precio, descripcion, estado, genero_dirigido, id_categoria
             });
-
-            if (tallas && tallas.length > 0) {
-                const tallaProdu = tallas.map(id_Talla => ({
+    
+            // Guardar tallas si se enviaron
+            if (tallas) {
+                const tallasArray = tallas.split(",").map(id => ({
                     id_producto: nuevoProducto.id,
-                    id_Talla
+                    id_talla: parseInt(id)
                 }));
-                await Talla.bulkCreate(tallaProdu);
+                await ProductoTalla.bulkCreate(tallasArray);
             }
+    
             // Guardar imágenes si existen
             if (req.files && req.files.length > 0) {
                 const imagenesData = req.files.map(file => ({
@@ -70,13 +74,13 @@ const ProductoController = {
                 }));
                 await Imagen.bulkCreate(imagenesData);
             }
-
+    
             res.status(201).json({ message: "Producto agregado correctamente", producto: nuevoProducto });
         } catch (error) {
             res.status(500).json({ message: "Error al agregar el producto", error });
         }
     },
-
+    
     // Actualizar un producto y reemplazar sus imágenes
     async update(req, res) {
         try {
