@@ -2,6 +2,7 @@ import Producto from "../model/ProductoModel.js";
 import Imagen from "../model/ImagenModel.js";
 import fs from "fs";
 import path from "path";
+import Talla from "../model/TallaModel.js";
 
 const ProductoController = {
 
@@ -9,6 +10,7 @@ const ProductoController = {
     async getAll(req, res) {
         try {
             const productos = await Producto.findAll({
+                include: [{ model: Imagen, as: "imagenes" }],
                 include: [{ model: Imagen, as: "imagenes" }]
             });
             res.status(200).json(productos);
@@ -48,11 +50,18 @@ const ProductoController = {
     // Crear un nuevo producto con imágenes
     async create(req, res) {
         try {
-            const { codigo, nombre, precio, descripcion, talla, estado, genero_dirigido, id_categoria } = req.body;
+            const { codigo, nombre, precio, descripcion, estado, genero_dirigido, id_categoria } = req.body;
             const nuevoProducto = await Producto.create({
-                codigo, nombre, precio, descripcion, talla, estado, genero_dirigido, id_categoria
+                codigo, nombre, precio, descripcion, estado, genero_dirigido, id_categoria
             });
 
+            if (tallas && tallas.length > 0) {
+                const tallaProdu = tallas.map(id_Talla => ({
+                    id_producto: nuevoProducto.id,
+                    id_Talla
+                }));
+                await Talla.bulkCreate(tallaProdu);
+            }
             // Guardar imágenes si existen
             if (req.files && req.files.length > 0) {
                 const imagenesData = req.files.map(file => ({
@@ -72,14 +81,14 @@ const ProductoController = {
     async update(req, res) {
         try {
             const { id } = req.params;
-            const { codigo, nombre, precio, descripcion, talla, estado, genero_dirigido, id_categoria } = req.body;
+            const { codigo, nombre, precio, descripcion, estado, genero_dirigido, id_categoria } = req.body;
             const producto = await Producto.findByPk(id);
 
             if (!producto) {
                 return res.status(404).json({ message: "Producto no encontrado" });
             }
 
-            await producto.update({ codigo, nombre, precio, descripcion, talla, estado, genero_dirigido, id_categoria });
+            await producto.update({ codigo, nombre, precio, descripcion, estado, genero_dirigido, id_categoria });
 
             // Si se enviaron nuevas imágenes, eliminar las anteriores y agregar las nuevas
             if (req.files && req.files.length > 0) {
