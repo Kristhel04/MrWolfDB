@@ -12,7 +12,7 @@ const ProductoController = {
         try {
             const productos = await Producto.findAll({
                 include: [
-                    { model: Talla, as: "tallas" },
+                    { model: Talla, as: "tallas", attributes: ["nombre"]},
                     { model: Imagen, as: "imagenes" }
                 ]
             });
@@ -37,7 +37,10 @@ const ProductoController = {
 
             const productos = await Producto.findAll({
                 where: condiciones,
-                include: [{ model: Imagen, as: "imagenes" }]
+                include: [
+                    { model: Talla, as: "tallas", attributes: ["nombre"]},
+                    { model: Imagen, as: "imagenes" }
+                ]
             });
 
             if (productos.length > 0) {
@@ -87,7 +90,7 @@ const ProductoController = {
     async update(req, res) {
         try {
             const { id } = req.params;
-            const { codigo, nombre, precio, descripcion, estado, genero_dirigido, id_categoria } = req.body;
+            const { codigo, nombre, precio, descripcion, estado, genero_dirigido, id_categoria,tallas } = req.body;
             const producto = await Producto.findByPk(id);
 
             if (!producto) {
@@ -95,6 +98,27 @@ const ProductoController = {
             }
 
             await producto.update({ codigo, nombre, precio, descripcion, estado, genero_dirigido, id_categoria });
+
+            if (tallas) {
+                const tallasArray = tallas.split(",").map(id => parseInt(id));
+            
+                // Verificar que las tallas existen
+                const tallasValidas = await Talla.findAll({ where: { id: tallasArray } });
+            
+                if (tallasValidas.length !== tallasArray.length) {
+                    return res.status(400).json({ message: "Algunas tallas no existen" });
+                }
+
+                await ProductoTalla.destroy({ where: { id_producto: id } });
+            
+                const nuevasTallas = tallasArray.map(id_talla => ({
+                    id_producto: id,
+                    id_talla: id_talla
+                }));
+                
+                await ProductoTalla.bulkCreate(nuevasTallas);
+            }
+            
 
             // Si se enviaron nuevas imágenes, eliminar las anteriores y agregar las nuevas
             if (req.files && req.files.length > 0) {
