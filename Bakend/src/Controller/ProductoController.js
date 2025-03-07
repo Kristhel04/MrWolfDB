@@ -129,109 +129,96 @@ const ProductoController = {
     }
   },
 
-  // Buscar producto por nombre o código
-  async busqueda(req, res) {
-    try {
-      const { nombre, codigo } = req.body;
+    // Buscar producto por nombre o código
+    async busqueda(req, res) {
+      try {
+          const { nombre, codigo } = req.body;
 
-      if (!nombre && !codigo) {
-        return res
-          .status(400)
-          .json({ message: "Debes proporcionar un nombre o código" });
+          if (!nombre && !codigo) {
+              return res.status(400).json({ message: "Debes proporcionar un nombre o código" });
+          }
+
+          const condiciones = {};
+          if (nombre) condiciones.nombre = nombre;
+          if (codigo) condiciones.codigo = codigo;
+
+          const productos = await Producto.findAll({
+              where: condiciones,
+              include: [
+                  { model: Talla, as: "tallas", attributes: ["nombre"]},
+                  { model: Imagen, as: "imagenes" }
+              ]
+          });
+
+          if (productos.length > 0) {
+              res.status(200).json(productos);
+          } else {
+              res.status(404).json({ message: "No se encontraron productos con esos criterios" });
+          }
+      } catch (error) {
+          res.status(500).json({ message: "Error al buscar productos", error });
       }
-
-      const condiciones = {};
-      if (nombre) condiciones.nombre = nombre;
-      if (codigo) condiciones.codigo = codigo;
-
-      const productos = await Producto.findAll({
-        where: condiciones,
-        include: [{ model: Imagen, as: "imagenes" }],
-      });
-
-      if (productos.length > 0) {
-        res.status(200).json(productos);
-      } else {
-        res
-          .status(404)
-          .json({ message: "No se encontraron productos con esos criterios" });
-      }
-    } catch (error) {
-      res.status(500).json({ message: "Error al buscar productos", error });
-    }
   },
 
   // Actualizar un producto y reemplazar sus imágenes
   async update(req, res) {
-    console.log("Datos recibidos:", req.body);
-    console.log("Archivos recibidos:", req.files);
     try {
-      const { id } = req.params;
-      const {
-        codigo,
-        nombre,
-        precio,
-        descripcion,
-        talla,
-        estado,
-        genero_dirigido,
-        id_categoria,
-      } = req.body;
-      const producto = await Producto.findByPk(id);
+        const { id } = req.params;
+        const { codigo, nombre, precio, descripcion, estado, genero_dirigido, id_categoria,tallas } = req.body;
+        const producto = await Producto.findByPk(id);
 
-      if (!producto) {
-        return res.status(404).json({ message: "Producto no encontrado" });
-      }
+        if (!producto) {
+            return res.status(404).json({ message: "Producto no encontrado" });
+        }
 
-      // Actualizar los campos del producto
-      await producto.update({
-        codigo,
-        nombre,
-        precio,
-        descripcion,
-        talla,
-        estado,
-        genero_dirigido,
-        id_categoria,
-      });
+        await producto.update({ codigo, nombre, precio, descripcion, estado, genero_dirigido, id_categoria });
 
-      // Si se enviaron nuevas imágenes, eliminar las anteriores y agregar las nuevas
-      if (req.files && req.files.length > 0) {
-        const imagenesViejas = await Imagen.findAll({
-          where: { id_producto: id },
-        });
+        if (tallas) {
+            const tallasArray = tallas.split(",").map(id => parseInt(id));
+        
+            // Verificar que las tallas existen
+            const tallasValidas = await Talla.findAll({ where: { id: tallasArray } });
+        
+            if (tallasValidas.length !== tallasArray.length) {
+                return res.status(400).json({ message: "Algunas tallas no existen" });
+            }
 
-        // Eliminar archivos de imágenes anteriores
-        imagenesViejas.forEach((img) => {
-          const filePath = path.join("public/ImgProductos", img.nomImagen);
-          if (fs.existsSync(filePath)) {
-            fs.unlinkSync(filePath);
-          }
-        });
+            await ProductoTalla.destroy({ where: { id_producto: id } });
+        
+            const nuevasTallas = tallasArray.map(id_talla => ({
+                id_producto: id,
+                id_talla: id_talla
+            }));
+            
+            await ProductoTalla.bulkCreate(nuevasTallas);
+        }
+        
 
-        // Guardar nuevas imágenes
-        const imgNuevas = req.files.map((file) => ({
-          id_producto: id,
-          nomImagen: file.filename,
-        }));
-        console.log("Nuevas imágenes:", imgNuevas); // Depuración
-        await Imagen.destroy({ where: { id_producto: id } });
-        await Imagen.bulkCreate(imgNuevas);
-      }
+        // Si se enviaron nuevas imágenes, eliminar las anteriores y agregar las nuevas
+        if (req.files && req.files.length > 0) {
+            const imagenesViejas = await Imagen.findAll({ where: { id_producto: id } });
 
-      // Obtener el producto actualizado con las imágenes asociadas
-      const productoActualizado = await Producto.findByPk(id, {
-        include: [{ model: Imagen, as: "imagenes" }], // Incluir las imágenes asociadas
-      });
-      console.log("Producto actualizado:", productoActualizado);
-      // Devolver el producto actualizado en la respuesta
-      res.status(200).json(productoActualizado);
+            // Eliminar archivos de imágenes anteriores
+            imagenesViejas.forEach(img => {
+                const filePath = path.join("public/ImgProductos", img.nomImagen);
+                if (fs.existsSync(filePath)) {
+                    fs.unlinkSync(filePath);
+                }
+            })
+            // Guardar nuevas imágenes
+            const imgNuevas = req.files.map(file => ({
+                id_producto: id,
+                nomImagen: file.filename
+            }));
+            await Imagen.destroy({ where: { id_producto: id } });
+            await Imagen.bulkCreate(imgNuevas);
+        }
+
+        res.status(200).json({ message: "Producto actualizado correctamente" });
     } catch (error) {
-      res
-        .status(500)
-        .json({ message: "Error al actualizar el producto", error });
+        res.status(500).json({ message: "Error al actualizar el producto", error });
     }
-  },
+},
 
   // Eliminar un producto junto con sus imágenes
   async delete(req, res) {
