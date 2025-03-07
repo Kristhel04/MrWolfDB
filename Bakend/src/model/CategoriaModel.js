@@ -29,4 +29,6 @@ Categoria.init({
     timestamps: false
 });
 
+
+
 export default Categoria;
