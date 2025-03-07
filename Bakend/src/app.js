@@ -5,6 +5,7 @@ import categoriasR from './router/Categoria.routes.js';
 import carritosR from './router/Carrito.routes.js';
 import TallaR from './router/Talla.routes.js';
 import sequelize from './baseDatos/connection.js';
+import TallaController from './Controller/TallaController.js'
 import ConfRelaciones from './model/Relaciones.js';
 import 'dotenv/config';
 import cors from 'cors';
@@ -23,6 +24,9 @@ app.use('/api/v1', productosR);
 app.use('/api/v1', categoriasR);
 app.use('/api/v1', TallaR);
 app.use('/api/v1', carritosR);
+
+
+TallaController.syncAndInsertTallas(); 
 
 await sequelize.sync({ force: false });
 ConfRelaciones();
