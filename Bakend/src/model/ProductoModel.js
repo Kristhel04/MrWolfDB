@@ -1,5 +1,6 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from '../baseDatos/connection.js';
+import Imagen from '../model/ImagenModel.js';
 
 class Producto extends Model {}
 
@@ -34,10 +35,6 @@ Producto.init({
         type: DataTypes.STRING,
         allowNull: true
     },
-    imagen:{
-        type: DataTypes.STRING,
-        allowNull: false
-    },
     genero_dirigido:{
         type: DataTypes.STRING,
         allowNull: false,
@@ -55,5 +52,9 @@ Producto.init({
     tableName: 'Productos',
     timestamps: false
 });
+// Relación con imágenes
+Producto.hasMany(Imagen, { foreignKey: "id_producto", as: "imagenes" });
+Imagen.belongsTo(Producto, { foreignKey: "id_producto" });
+
 
 export default Producto;
