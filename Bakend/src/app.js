@@ -24,8 +24,8 @@ app.use('/api/v1', categoriasR);
 app.use('/api/v1', TallaR);
 app.use('/api/v1', carritosR);
 
-
-// Configurar relaciones de Sequelize
+await sequelize.sync({ force: false });
 ConfRelaciones();
+
 
 export default app;
