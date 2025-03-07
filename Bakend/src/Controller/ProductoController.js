@@ -17,13 +17,18 @@ const ProductoController = {
       });
       res.status(200).json(productos);
     } catch (error) {
-      res.status(500).json({ message: "Error al obtener los productos", error });
+      res
+        .status(500)
+        .json({ message: "Error al obtener los productos", error });
     }
   },
 
   // Crear un nuevo producto con imágenes
   async create(req, res) {
     try {
+      console.log("Datos recibidos:", req.body); // Verificar los datos recibidos
+      console.log("Archivos recibidos:", req.files); // Verificar las imágenes
+
       const {
         codigo,
         nombre,
@@ -32,9 +37,13 @@ const ProductoController = {
         estado,
         genero_dirigido,
         id_categoria,
-        tallas,
+        tallas, // Aquí recibes las tallas como una cadena
       } = req.body;
 
+      const precioNum = parseFloat(precio);
+      const codigoNum = parseInt(codigo);
+
+      // Crear el nuevo producto
       const nuevoProducto = await Producto.create({
         codigo,
         nombre,
@@ -45,13 +54,18 @@ const ProductoController = {
         id_categoria,
       });
 
-      // Guardar tallas si se enviaron
+      // Procesar las tallas y asociarlas al producto
       if (tallas) {
         const tallasArray = tallas.split(",").map((id) => ({
           id_producto: nuevoProducto.id,
-          id_talla: parseInt(id),
+          id_talla: parseInt(id.trim()), // trim para quitar espacios
         }));
+
+        console.log("Tallas procesadas:", tallasArray); // Depuración
+
+        // Insertar las tallas en la tabla intermedia ProductoTalla
         await ProductoTalla.bulkCreate(tallasArray);
+        console.log("Tallas insertadas en ProductoTalla"); // Confirmación de inserción
       }
 
       // Guardar imágenes si existen
@@ -60,13 +74,17 @@ const ProductoController = {
           id_producto: nuevoProducto.id,
           nomImagen: file.filename,
         }));
+        console.log("Archivos procesados:", imagenesData); // Depuración
         await Imagen.bulkCreate(imagenesData);
+        console.log("Imágenes insertadas en Imagen"); // Confirmación de inserción
       }
 
-      res
-        .status(201)
-        .json({ message: "Producto agregado correctamente", producto: nuevoProducto });
+      res.status(201).json({
+        message: "Producto agregado correctamente",
+        producto: nuevoProducto,
+      });
     } catch (error) {
+      console.error("Error al agregar producto:", error); // Detalles del error
       res.status(500).json({ message: "Error al agregar el producto", error });
     }
   },
@@ -79,11 +97,15 @@ const ProductoController = {
         include: [{ model: Imagen, as: "imagenes" }],
       });
       if (productos.length === 0) {
-        return res.status(404).json({ message: "No hay productos masculinos disponibles" });
+        return res
+          .status(404)
+          .json({ message: "No hay productos masculinos disponibles" });
       }
       res.status(200).json(productos);
     } catch (error) {
-      res.status(500).json({ message: "Error al obtener los productos masculinos", error });
+      res
+        .status(500)
+        .json({ message: "Error al obtener los productos masculinos", error });
     }
   },
 
@@ -95,11 +117,15 @@ const ProductoController = {
         include: [{ model: Imagen, as: "imagenes" }],
       });
       if (productos.length === 0) {
-        return res.status(404).json({ message: "No hay productos femeninos disponibles" });
+        return res
+          .status(404)
+          .json({ message: "No hay productos femeninos disponibles" });
       }
       res.status(200).json(productos);
     } catch (error) {
-      res.status(500).json({ message: "Error al obtener los productos femeninos", error });
+      res
+        .status(500)
+        .json({ message: "Error al obtener los productos femeninos", error });
     }
   },
 
@@ -201,7 +227,9 @@ const ProductoController = {
       // Devolver el producto actualizado en la respuesta
       res.status(200).json(productoActualizado);
     } catch (error) {
-      res.status(500).json({ message: "Error al actualizar el producto", error });
+      res
+        .status(500)
+        .json({ message: "Error al actualizar el producto", error });
     }
   },
 
