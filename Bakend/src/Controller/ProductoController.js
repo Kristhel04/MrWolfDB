@@ -165,6 +165,7 @@ const ProductoController = {
                 }
             });
 
+            await ProductoTalla.destroy({where: {id_producto: id }});
             await Imagen.destroy({ where: { id_producto: id } });
             await producto.destroy();
 
