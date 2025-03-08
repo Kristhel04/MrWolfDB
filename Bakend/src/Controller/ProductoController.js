@@ -163,62 +163,78 @@ const ProductoController = {
   // Actualizar un producto y reemplazar sus imágenes
   async update(req, res) {
     try {
-        const { id } = req.params;
-        const { codigo, nombre, precio, descripcion, estado, genero_dirigido, id_categoria,tallas } = req.body;
-        const producto = await Producto.findByPk(id);
-
-        if (!producto) {
-            return res.status(404).json({ message: "Producto no encontrado" });
+      const { id } = req.params;
+      const { codigo, nombre, precio, descripcion, estado, genero_dirigido, id_categoria, tallas } = req.body;
+  
+      // Actualizar el producto
+      const [updated] = await Producto.update(
+        { codigo, nombre, precio, descripcion, estado, genero_dirigido, id_categoria },
+        { where: { id } }
+      );
+  
+      if (!updated) {
+        return res.status(404).json({ message: "Producto no encontrado" });
+      }
+  
+      // Actualizar las tallas del producto
+      if (tallas) {
+        const tallasArray = tallas.split(",").map((id) => parseInt(id));
+  
+        // Verificar que las tallas existen
+        const tallasValidas = await Talla.findAll({ where: { id: tallasArray } });
+        if (tallasValidas.length !== tallasArray.length) {
+          return res.status(400).json({ message: "Algunas tallas no existen" });
         }
-
-        await producto.update({ codigo, nombre, precio, descripcion, estado, genero_dirigido, id_categoria });
-
-        if (tallas) {
-            const tallasArray = tallas.split(",").map(id => parseInt(id));
-        
-            // Verificar que las tallas existen
-            const tallasValidas = await Talla.findAll({ where: { id: tallasArray } });
-        
-            if (tallasValidas.length !== tallasArray.length) {
-                return res.status(400).json({ message: "Algunas tallas no existen" });
-            }
-
-            await ProductoTalla.destroy({ where: { id_producto: id } });
-        
-            const nuevasTallas = tallasArray.map(id_talla => ({
-                id_producto: id,
-                id_talla: id_talla
-            }));
-            
-            await ProductoTalla.bulkCreate(nuevasTallas);
-        }
-        
-
-        // Si se enviaron nuevas imágenes, eliminar las anteriores y agregar las nuevas
-        if (req.files && req.files.length > 0) {
-            const imagenesViejas = await Imagen.findAll({ where: { id_producto: id } });
-
-            // Eliminar archivos de imágenes anteriores
-            imagenesViejas.forEach(img => {
-                const filePath = path.join("public/ImgProductos", img.nomImagen);
-                if (fs.existsSync(filePath)) {
-                    fs.unlinkSync(filePath);
-                }
-            })
-            // Guardar nuevas imágenes
-            const imgNuevas = req.files.map(file => ({
-                id_producto: id,
-                nomImagen: file.filename
-            }));
-            await Imagen.destroy({ where: { id_producto: id } });
-            await Imagen.bulkCreate(imgNuevas);
-        }
-
-        res.status(200).json({ message: "Producto actualizado correctamente" });
+  
+        // Eliminar las relaciones anteriores
+        await ProductoTalla.destroy({ where: { id_producto: id } });
+  
+        // Crear las nuevas relaciones
+        const nuevasTallas = tallasArray.map((id_talla) => ({
+          id_producto: id,
+          id_talla: id_talla,
+        }));
+        await ProductoTalla.bulkCreate(nuevasTallas);
+      }
+  
+      // Manejo de imágenes
+      if (req.files && req.files.length > 0) {
+        // Eliminar imágenes antiguas
+        const imagenesViejas = await Imagen.findAll({ where: { id_producto: id } });
+        imagenesViejas.forEach((img) => {
+          const filePath = path.join("public/ImgProductos", img.nomImagen);
+          if (fs.existsSync(filePath)) {
+            fs.unlinkSync(filePath);
+          }
+        });
+  
+        // Eliminar registros de imágenes antiguas de la base de datos
+        await Imagen.destroy({ where: { id_producto: id } });
+  
+        // Guardar nuevas imágenes
+        const imgNuevas = req.files.map((file) => ({
+          id_producto: id,
+          nomImagen: file.filename,
+        }));
+        await Imagen.bulkCreate(imgNuevas);
+      }
+  
+      // Obtener el producto actualizado con sus tallas e imágenes
+      const productoActualizado = await Producto.findByPk(id, {
+        include: [
+          { model: Talla, as: "tallas" },
+          { model: Imagen, as: "imagenes" },
+        ],
+      });
+          // Verificar los datos que se devuelven al frontend
+    console.log("Producto actualizado en el backend:", JSON.stringify(productoActualizado, null, 2));
+  
+      res.status(200).json({ message: "Producto actualizado correctamente", producto: productoActualizado });
     } catch (error) {
-        res.status(500).json({ message: "Error al actualizar el producto", error });
+      console.error("Error al actualizar el producto:", error);
+      res.status(500).json({ message: "Error al actualizar el producto", error });
     }
-},
+  },
 
   // Eliminar un producto junto con sus imágenes
   async delete(req, res) {
