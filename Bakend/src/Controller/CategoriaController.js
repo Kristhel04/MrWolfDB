@@ -8,34 +8,33 @@ const uploadDir = path.join("public", "ImgCategorias");
 
 // Verificar si la carpeta existe, si no, crearla
 if (!fs.existsSync(uploadDir)) {
-    fs.mkdirSync(uploadDir, { recursive: true });
+  fs.mkdirSync(uploadDir, { recursive: true });
 }
 
 // Configuración de multer
 const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-        cb(null, uploadDir);
-    },
-    filename: (req, file, cb) => {
-        const ext = path.extname(file.originalname).toLowerCase();
-        const filename = `${Date.now()}${ext}`;
-        cb(null, filename);
-    }
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    const ext = path.extname(file.originalname).toLowerCase();
+    const filename = `${Date.now()}${ext}`;
+    cb(null, filename);
+  },
 });
 
-//Fintro para que solo se acepten imagenes 
+//Fintro para que solo se acepten imagenes
 const fileFilter = (req, file, cb) => {
-    const allowedExtensions = [".jpg", ".jpeg", ".png"];
-    const ext = path.extname(file.originalname).toLowerCase();
-    if (!allowedExtensions.includes(ext)) {
-        return cb(new Error("Formato de archivo no permitido"), false);
-    }
-    cb(null, true);
+  const allowedExtensions = [".jpg", ".jpeg", ".png"];
+  const ext = path.extname(file.originalname).toLowerCase();
+  if (!allowedExtensions.includes(ext)) {
+    return cb(new Error("Formato de archivo no permitido"), false);
+  }
+  cb(null, true);
 };
 
 //Subida de la imagen al storage
 const upload = multer({ storage, fileFilter }).single("imagen");
-
 
 const CategoriaController = {
     
@@ -163,6 +162,8 @@ const CategoriaController = {
             res.status(500).json({ message: "Error al eliminar la categoría", error });
         }
     }
-};
+  }
+
+
 
 export default CategoriaController;

@@ -12,13 +12,17 @@ import cors from 'cors';
 import path from 'path';
 
 const app = express();
-
-// Middlewares
 app.use(cors());
 app.use(express.json());
-app.use('/imagenes', express.static(path.join(process.cwd(), 'public', 'ImgCategorias')));
 
-// Rutas
+const __dirname = path.resolve();
+const staticFilesPath = path.join(__dirname, 'public'); // Ruta base para archivos estáticos
+
+// Configuración de rutas estáticas
+app.use("/imagenes", express.static(path.join(staticFilesPath, "ImgCategorias")));
+app.use('/ImgProductos', express.static(path.join(staticFilesPath, 'ImgProductos')));
+
+// Rutas de la API
 app.use('/api/v1', usuariosR);
 app.use('/api/v1', productosR);
 app.use('/api/v1', categoriasR);
