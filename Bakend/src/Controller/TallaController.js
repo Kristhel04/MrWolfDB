@@ -1,4 +1,6 @@
 import Talla from '../model/TallaModel.js';
+import sequelize from '../baseDatos/connection.js';
+
 
 const TallaController ={
 
