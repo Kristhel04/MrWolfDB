@@ -29,29 +29,14 @@ const ProductoController = {
       console.log("Datos recibidos:", req.body); // Verificar los datos recibidos
       console.log("Archivos recibidos:", req.files); // Verificar las imágenes
 
-      const {
-        codigo,
-        nombre,
-        precio,
-        descripcion,
-        estado,
-        genero_dirigido,
-        id_categoria,
-        tallas, // Aquí recibes las tallas como una cadena
+      const {codigo,nombre,precio,descripcion,estado,genero_dirigido,id_categoria,tallas, // Aquí recibes las tallas como una cadena
       } = req.body;
 
       const precioNum = parseFloat(precio);
       const codigoNum = parseInt(codigo);
 
       // Crear el nuevo producto
-      const nuevoProducto = await Producto.create({
-        codigo,
-        nombre,
-        precio,
-        descripcion,
-        estado,
-        genero_dirigido,
-        id_categoria,
+      const nuevoProducto = await Producto.create({codigo,nombre,precio,descripcion,estado,genero_dirigido,id_categoria,
       });
 
       // Procesar las tallas y asociarlas al producto
