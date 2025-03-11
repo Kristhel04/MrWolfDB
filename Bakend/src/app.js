@@ -30,7 +30,8 @@ app.use('/api/v1', TallaR);
 app.use('/api/v1', carritosR);
 
 
-TallaController.syncAndInsertTallas(); 
+
+
 
 await sequelize.sync({ force: false });
 ConfRelaciones();
