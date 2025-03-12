@@ -8,9 +8,13 @@ export const authenticateToken = (req, res, next) => {
     if (!token) return res.status(403).json({ message: 'Token requerido' });
 
     jwt.verify(token, process.env.JWT_SECRET, (err, user) => {
-        if (err) return res.status(403).json({ message: 'Token inválido' });
-
-        req.user = user; // Almacena el usuario en el objeto req
+        if (err) {
+            if (err.name === 'TokenExpiredError') {
+                return res.status(401).json({ message: 'Token expirado' });
+            }
+            return res.status(403).json({ message: 'Token inválido' });
+        }
+        req.user = user;
         next();
     });
     console.log('JWT_SECRET:', process.env.JWT_SECRET);
@@ -21,8 +25,10 @@ export const authenticateToken = (req, res, next) => {
 // Middleware para autorizar roles específicos
 export const authorizeRole = (rolesPermitidos) => {
     return (req, res, next) => {
-        const { rol } = req.user; 
-        console.log("Rol recibido:", rol);
+        const { rol } = req.user;
+        if (!rol) {
+            return res.status(403).json({ message: 'Rol no definido en el token' });
+        }
         if (!rolesPermitidos.includes(rol)) {
             return res.status(403).json({ message: 'Acceso denegado' });
         }

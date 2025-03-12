@@ -13,6 +13,8 @@ router.put('/usuarios/:cedula', UsuarioController.updateUser);
 //router.delete('/usuarios/:cedula', authenticateToken, authorizeRole(['Administrador']), UsuarioController.deleteUser);
 router.delete('/usuarios/:cedula', UsuarioController.deleteUser);
 router.post('/login', UsuarioController.login);
+router.post('/logout', UsuarioController.logout);
+router.post('/refresh-token', UsuarioController.refreshToken);
 
 
 
