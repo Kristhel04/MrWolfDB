@@ -13,5 +13,6 @@ router.put("/productos/:id", upload.array("imagen", 5), ProductoController.updat
 router.delete('/productos/:id', ProductoController.delete);
 router.get('/productos/M',ProductoController.ProductosMasculinos);
 router.get('/productos/F',ProductoController.ProductosFemeninos);
+router.get('/productos/Aleatorios',ProductoController.producAleatorios);
 
 export default router;

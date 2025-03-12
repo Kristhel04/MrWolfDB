@@ -4,6 +4,8 @@ import fs from "fs";
 import path from "path";
 import Talla from "../model/TallaModel.js";
 import ProductoTalla from "../model/ProductoTallaModel.js";
+import { Sequelize } from "sequelize";
+
 
 const ProductoController = {
   // Obtener todos los productos con sus imágenes
@@ -234,6 +236,23 @@ const ProductoController = {
             res.status(500).json({ message: "Error al eliminar el producto", error });
         }
     },
+
+    async producAleatorios(req, res) {
+      try {
+          const productos = await Producto.findAll({
+              include: [{ model: Imagen, as: "imagenes" }],
+              order: Sequelize.literal("NEWID()"),
+              limit: 20
+          });
+
+          res.status(200).json(productos);
+      } catch (error) {
+          console.error("Error al obtener productos aleatorios:", error);
+          res.status(500).json({ message: "Error al obtener productos aleatorios", error: error.message });
+      }
+    }
+
+  
 
 };
 
