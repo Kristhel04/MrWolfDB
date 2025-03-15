@@ -24,7 +24,25 @@ const ProductoController = {
         .json({ message: "Error al obtener los productos", error });
     }
   },
+  async getById(req, res) {
+    try {
+      const { id } = req.params;
+      const producto = await Producto.findByPk(id, {
+        include: [
+          { model: Talla, as: "tallas" },
+          { model: Imagen, as: "imagenes" },
+        ],
+      });
 
+      if (!producto) {
+        return res.status(404).json({ message: "Producto no encontrado" });
+      }
+
+      res.status(200).json(producto);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener el producto", error });
+    }
+  },
   // Crear un nuevo producto con imágenes
   async create(req, res) {
     try {
