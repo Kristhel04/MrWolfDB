@@ -26,23 +26,27 @@ const ProductoController = {
   },
   async getById(req, res) {
     try {
-      const { id } = req.params;
-      const producto = await Producto.findByPk(id, {
-        include: [
-          { model: Talla, as: "tallas" },
-          { model: Imagen, as: "imagenes" },
-        ],
-      });
+        const { id } = req.params;
+        const producto = await Producto.findByPk(id, {
+            include: [
+                { model: Talla, as: "tallas", attributes: ["nombre"] }, // Solo enviamos el nombre
+                { model: Imagen, as: "imagenes" }
+            ],
+        });
 
-      if (!producto) {
-        return res.status(404).json({ message: "Producto no encontrado" });
-      }
+        if (!producto) {
+            return res.status(404).json({ message: "Producto no encontrado" });
+        }
+        // Convertir la respuesta a JSON y asegurarnos de que las tallas sean un array de nombres
+        const productoJson = producto.toJSON();
+        productoJson.tallas = productoJson.tallas.map(talla => talla.nombre);
 
-      res.status(200).json(producto);
+        res.status(200).json(productoJson);
     } catch (error) {
-      res.status(500).json({ message: "Error al obtener el producto", error });
+        res.status(500).json({ message: "Error al obtener el producto", error });
     }
-  },
+},
+
   // Crear un nuevo producto con imágenes
   async create(req, res) {
     try {
