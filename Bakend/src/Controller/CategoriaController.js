@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import multer from "multer";
 import Categoria from "../model/CategoriaModel.js";
+import Producto from "../model/ProductoModel.js";
 
 // Definir la carpeta de almacenamiento
 const uploadDir = path.join("public", "ImgCategorias");
@@ -161,9 +162,27 @@ const CategoriaController = {
         } catch (error) {
             res.status(500).json({ message: "Error al eliminar la categoría", error });
         }
-    }
-  }
+    },
 
+    async ObtenerAlgunasCate (req, res) {
+      try {
+          const categorias = await Categoria.findAll({
+              limit: 5, // Obtener solo 5 categorías
+              attributes: ['id', 'nombre', 'imagen'], 
+              include: [
+                  {
+                      model: Producto,
+                      as: 'productos',
+                      attributes: ['id', 'nombre', 'precio', 'imagen'] // Datos básicos del producto
+                  }
+              ]
+          });
+  
+          res.json(categorias);
+      } catch (error) {
+          res.status(500).json({ mensaje: 'Error al obtener categorías', error });
+      }
+     }
 
-
+  };
 export default CategoriaController;
