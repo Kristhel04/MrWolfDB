@@ -12,6 +12,7 @@ router.post("/productos", upload.array("imagen", 5), ProductoController.create);
 router.put("/productos/:id", upload.array("imagen", 5), ProductoController.update);
 router.get('/productos/aleatorios',ProductoController.producAleatorios);
 router.get('/productos/:id', ProductoController.getById);
+router.get('/productos/categoria/:id',ProductoController.getProductosPorCategoria);
 router.delete('/productos/:id', ProductoController.delete);
 router.get('/productos/M',ProductoController.ProductosMasculinos);
 router.get('/productos/F',ProductoController.ProductosFemeninos);

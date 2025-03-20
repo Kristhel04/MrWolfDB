@@ -2,7 +2,7 @@ import fs from "fs";
 import path from "path";
 import multer from "multer";
 import Categoria from "../model/CategoriaModel.js";
-import Producto from "../model/ProductoModel.js";
+import { Sequelize } from "sequelize";
 
 // Definir la carpeta de almacenamiento
 const uploadDir = path.join("public", "ImgCategorias");
@@ -163,26 +163,25 @@ const CategoriaController = {
             res.status(500).json({ message: "Error al eliminar la categoría", error });
         }
     },
-
-    async ObtenerAlgunasCate (req, res) {
+    async ObtenerAlgunasCate(req, res) {
       try {
           const categorias = await Categoria.findAll({
-              limit: 5, // Obtener solo 5 categorías
-              attributes: ['id', 'nombre', 'imagen'], 
-              include: [
-                  {
-                      model: Producto,
-                      as: 'productos',
-                      attributes: ['id', 'nombre', 'precio', 'imagen'] // Datos básicos del producto
-                  }
-              ]
+              attributes: ['num_categoria', 'nombre_categoria', 'imagen'],
+              order: [['num_categoria', 'ASC']],
+              limit: 5
           });
   
-          res.json(categorias);
+          const categoriasConImagenURL = categorias.map(categoria => ({
+              ...categoria.dataValues,
+              imagen: categoria.imagen ? `http://localhost:3000/imagenes/${categoria.imagen}` : null
+          }));
+  
+          res.status(200).json(categoriasConImagenURL);
       } catch (error) {
-          res.status(500).json({ mensaje: 'Error al obtener categorías', error });
+          res.status(500).json({ message: "Error al obtener las categorías", error });
       }
-     }
-
+  }
+  
+  
   };
 export default CategoriaController;
