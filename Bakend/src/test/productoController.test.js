@@ -66,23 +66,72 @@ describe("ProductoController", () => {
 
   describe("PUT /productos/:id", () => {
     it("debería actualizar un producto existente", async () => {
-      const productoId = 10; // Cambia esto por un ID válido
-      const datosActualizados = {
-        nombre: "Producto Actualizado",
-        precio: 150,
-      };
+        const productoId = 10; // Cambia esto por un ID válido
+        const datosActualizados = {
+            nombre: "Producto Actualizado",
+            precio: 150,
+        };
 
-      const response = await request(app)
-        .put(`/api/v1/productos/${productoId}`)
-        .send(datosActualizados);
+        const response = await request(app)
+            .put(`/api/v1/productos/${productoId}`)
+            .send(datosActualizados);
 
-      expect(response.status).to.equal(200);
-      expect(response.body).to.have.property(
-        "message",
-        "Producto actualizado correctamente"
-      );
+        expect(response.status).to.equal(200);
+        expect(response.body).to.have.property(
+            "message",
+            "Producto actualizado correctamente"
+        );
+        expect(response.body.producto.nombre).to.equal("Producto Actualizado");
+        expect(response.body.producto.precio).to.equal(150);
     });
-  });
+
+    it("debería devolver un error 404 si el producto no existe", async () => {
+        const productoId = 9999; // ID que no existe
+        const datosActualizados = {
+            nombre: "Producto Actualizado",
+            precio: 150,
+        };
+
+        const response = await request(app)
+            .put(`/api/v1/productos/${productoId}`)
+            .send(datosActualizados);
+
+        expect(response.status).to.equal(404);
+        expect(response.body).to.have.property("message", "Producto no encontrado");
+    });
+
+    it("debería actualizar las tallas asociadas al producto", async () => {
+        const productoId = 10; // Cambia esto por un ID válido
+        const datosActualizados = {
+            nombre: "Producto Actualizado",
+            precio: 150,
+            tallas: "1,2", // IDs de tallas válidas
+        };
+
+        const response = await request(app)
+            .put(`/api/v1/productos/${productoId}`)
+            .send(datosActualizados);
+
+        expect(response.status).to.equal(200);
+        expect(response.body.producto.tallas).to.be.an("array").that.is.not.empty;
+    });
+
+    it("debería devolver un error 400 si las tallas no existen", async () => {
+        const productoId = 10; // Cambia esto por un ID válido
+        const datosActualizados = {
+            nombre: "Producto Actualizado",
+            precio: 150,
+            tallas: "999,1000", // IDs de tallas que no existen
+        };
+
+        const response = await request(app)
+            .put(`/api/v1/productos/${productoId}`)
+            .send(datosActualizados);
+
+        expect(response.status).to.equal(400);
+        expect(response.body).to.have.property("message", "Algunas tallas no existen");
+    });
+});
 
 
 /**   describe('GET /productos/:id', () => {
