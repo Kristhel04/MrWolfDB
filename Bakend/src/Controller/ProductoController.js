@@ -278,7 +278,7 @@ const ProductoController = {
       try {
           const { id } = req.params;
           const productos = await Producto.findAll({
-              where: { num_categoria: id },
+              where: { id_categoria: id },
               include: [
                   {
                       model: Talla,
