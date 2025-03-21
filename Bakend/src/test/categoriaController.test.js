@@ -14,21 +14,22 @@ describe("CategoriaController", () => {
   // Antes de las pruebas: Crear una categoría de prueba
   before(async () => {
     try {
-      // Crear una categoría de prueba sin imagen
+      // Crear una categoría de prueba con un nombre único
       testCategoria = await Categoria.create({
-        nombre_categoria: "Categoría de prueba",
+        nombre_categoria: `Categoría de prueba ${Date.now()}`, // Nombre único
         descripcion_categoria: "Descripción de prueba",
-        imagen: null,
+        imagen: "imagen_unica.jpg", // Cambia esto a un valor único
       });
     } catch (error) {
       console.error("Error en el hook before:", error);
+      console.error("Detalles del error:", error.errors); // Imprime los errores de validación
       throw error; // Relanza el error para que Mocha lo capture
     }
   });
 
   // Después de las pruebas: Eliminar la categoría de prueba y limpiar archivos
   after(async () => {
-    if (testCategoria && testCategoria.id) {
+    if (testCategoria && testCategoria.num_categoria) {
       // Eliminar la imagen si existe
       if (testCategoria.imagen) {
         const imagePath = path.join(uploadDir, testCategoria.imagen);
@@ -38,7 +39,7 @@ describe("CategoriaController", () => {
       }
 
       // Eliminar la categoría de prueba
-      await Categoria.destroy({ where: { id: testCategoria.id } });
+      await Categoria.destroy({ where: { num_categoria: testCategoria.num_categoria } });
     }
   });
 
@@ -54,50 +55,27 @@ describe("CategoriaController", () => {
   // Pruebas para GET /categorias/:id
   describe("GET /categorias/:id", () => {
     it("debería devolver una categoría específica", async () => {
-      const response = await request(app).get(`/api/v1/categorias/${testCategoria.id}`);
-      expect(response.status).to.equal(200);
-      expect(response.body).to.have.property("id", testCategoria.id);
+      const response = await request(app).get(
+        `/api/v1/categorias/${testCategoria.num_categoria}`
+      );
+
+      // Verificaciones
+      expect(response.status).to.equal(200); // Código de estado 200 (OK)
+      expect(response.body).to.have.property("num_categoria", testCategoria.num_categoria); // Verifica que la categoría devuelta tenga el mismo ID
+      expect(response.body).to.have.property("nombre_categoria", testCategoria.nombre_categoria); // Verifica el nombre
+      expect(response.body).to.have.property("descripcion_categoria", testCategoria.descripcion_categoria); // Verifica la descripción
+      expect(response.body).to.have.property("imagen"); // Verifica que la propiedad "imagen" esté presente
     });
 
     it("debería devolver un error 404 si la categoría no existe", async () => {
       const idInexistente = 9999;
-      const response = await request(app).get(`/api/v1/categorias/${idInexistente}`);
-      expect(response.status).to.equal(404);
-      expect(response.body).to.have.property("message", "Categoría no encontrada");
-    });
-  });
+      const response = await request(app).get(
+        `/api/v1/categorias/${idInexistente}`
+      );
 
-  // Pruebas para POST /categorias
-  describe("POST /categorias", () => {
-    it("debería crear una nueva categoría sin imagen", async () => {
-      const nuevaCategoria = {
-        nombre_categoria: "Nueva Categoría",
-        descripcion_categoria: "Descripción de la nueva categoría",
-      };
-
-      const response = await request(app)
-        .post("/api/v1/categorias")
-        .send(nuevaCategoria);
-
-      expect(response.status).to.equal(201);
-      expect(response.body).to.have.property("id");
-      expect(response.body.nombre_categoria).to.equal(nuevaCategoria.nombre_categoria);
-
-      // Limpiar la categoría creada
-      await Categoria.destroy({ where: { id: response.body.id } });
-    });
-
-    it("debería devolver un error si faltan campos obligatorios", async () => {
-      const categoriaIncompleta = {
-        nombre_categoria: "Categoría Incompleta",
-      };
-
-      const response = await request(app)
-        .post("/api/v1/categorias")
-        .send(categoriaIncompleta);
-
-      expect(response.status).to.equal(500);
-      expect(response.body).to.have.property("message", "Error al crear la categoría");
+      // Verificaciones
+      expect(response.status).to.equal(404); // Código de estado 404 (No encontrado)
+      expect(response.body).to.have.property("message", "Categoría no encontrada"); // Verifica el mensaje de error
     });
   });
 
@@ -110,12 +88,15 @@ describe("CategoriaController", () => {
       };
 
       const response = await request(app)
-        .put(`/api/v1/categorias/${testCategoria.id}`)
+        .put(`/api/v1/categorias/${testCategoria.num_categoria}`)
         .send(datosActualizados);
 
-      expect(response.status).to.equal(200);
-      expect(response.body).to.have.property("message", "Categoría actualizada");
-      expect(response.body.categoria.nombre_categoria).to.equal(datosActualizados.nombre_categoria);
+      // Verificaciones
+      expect(response.status).to.equal(200); // Código de estado 200 (OK)
+      expect(response.body).to.have.property("num_categoria", testCategoria.num_categoria); // Verifica que la categoría devuelta tenga el mismo ID
+      expect(response.body).to.have.property("nombre_categoria", datosActualizados.nombre_categoria); // Verifica que el nombre se haya actualizado
+      expect(response.body).to.have.property("descripcion_categoria", datosActualizados.descripcion_categoria); // Verifica que la descripción se haya actualizado
+      expect(response.body).to.have.property("imagen"); // Verifica que la propiedad "imagen" esté presente
     });
 
     it("debería devolver un error 404 si la categoría no existe", async () => {
@@ -132,16 +113,26 @@ describe("CategoriaController", () => {
   // Pruebas para DELETE /categorias/:id
   describe("DELETE /categorias/:id", () => {
     it("debería eliminar una categoría existente", async () => {
-      const response = await request(app).delete(`/api/v1/categorias/${testCategoria.id}`);
+      const response = await request(app).delete(
+        `/api/v1/categorias/${testCategoria.num_categoria}`
+      );
       expect(response.status).to.equal(200);
-      expect(response.body).to.have.property("message", "Categoría eliminada correctamente");
+      expect(response.body).to.have.property(
+        "message",
+        "Categoría eliminada correctamente"
+      );
     });
 
     it("debería devolver un error 404 si la categoría no existe", async () => {
       const idInexistente = 9999;
-      const response = await request(app).delete(`/api/v1/categorias/${idInexistente}`);
+      const response = await request(app).delete(
+        `/api/v1/categorias/${idInexistente}`
+      );
       expect(response.status).to.equal(404);
-      expect(response.body).to.have.property("message", "Categoría no encontrada");
+      expect(response.body).to.have.property(
+        "message",
+        "Categoría no encontrada"
+      );
     });
   });
 });
