@@ -281,24 +281,13 @@ const ProductoController = {
               where: { id_categoria: id },
               include: [
                   {
-                      model: Talla,
-                      as: "tallas",
-                      attributes: ["nombre"]
-                  },
-                  {
                       model: Imagen,
                       as: "imagenes",
                       attributes: ["nomImagen"]
                   }
               ]
           });
-  
-          const productosConImagenURL = productos.map(producto => ({
-              ...producto.dataValues,
-              imagenes: producto.imagenes.map(img => `http://localhost:3000/imagenes/${img.nomImagen}`)
-          }));
-  
-          res.status(200).json(productosConImagenURL);
+          res.status(200).json(productos);
       } catch (error) {
           res.status(500).json({ message: "Error al obtener productos", error });
       }
