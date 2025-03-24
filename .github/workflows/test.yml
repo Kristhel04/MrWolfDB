@@ -20,7 +20,7 @@ jobs:
     
     # Cambia al directorio 'Backend' donde está tu proyecto
     - name: Change directory to Backend
-      run: cd Backend
+      run: cd Bakend
 
     - name: Use Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
