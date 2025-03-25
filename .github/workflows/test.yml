@@ -8,7 +8,7 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest  # Recomendado usar Ubuntu para mayor velocidad
+    runs-on: windows-latest   # Recomendado usar Ubuntu para mayor velocidad
 
     steps:
     - uses: actions/checkout@v4
