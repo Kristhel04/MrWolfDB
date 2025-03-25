@@ -1,26 +1,37 @@
 import request from "supertest";
 import { expect } from "chai";
-import app from "../../src/app.js"; // Asegúrate de exportar tu app Express
+import { Sequelize } from "sequelize";
+import app from "../../src/app.js";
 import Usuario from "../model/UsuarioModel.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 
-describe("UsuarioController", () => {
-  let testUser; // Variable para almacenar el usuario de prueba
-  let authToken; // Variable para almacenar el token JWT
+// Configuración de la base de datos de prueba en memoria
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: ':memory:',
+  logging: false
+});
 
-  // Antes de las pruebas: Crear un usuario de prueba y generar un token JWT
-  // Antes de las pruebas: Crear un usuario de prueba y generar un token JWT
+describe("UsuarioController", () => {
+  let testUser;
+  let authToken;
+
+  // Antes de todas las pruebas
   before(async () => {
     try {
+      // Sincronizar modelos con la base de datos de prueba
+      await sequelize.sync({ force: true });
+
       const salt = await bcrypt.genSalt(10);
       const contraseñaEncriptada = await bcrypt.hash("password123", salt);
 
+      // Crear usuario de prueba principal
       testUser = await Usuario.create({
         cedula: "123456789",
         nombre_usuario: "testuser",
         nombre_completo: "Test User",
-        email: "test1@example.com", // Asegúrate de que este correo coincida con el de las pruebas
+        email: "test1@example.com",
         contrasena: contraseñaEncriptada,
         telefono: "1234567890",
         direccion_envio: "Calle Falsa 123",
@@ -29,26 +40,44 @@ describe("UsuarioController", () => {
         rol: "Administrador",
       });
 
-      // Generar un token JWT para el usuario de prueba
+      // Crear usuario adicional para pruebas de login
+      await Usuario.create({
+        cedula: "987654300",
+        nombre_usuario: "adminuser",
+        nombre_completo: "Admin User",
+        email: "admin@admin.com",
+        contrasena: await bcrypt.hash("admin", 10),
+        telefono: "0987654321",
+        direccion_envio: "Calle Admin 123",
+        email_facturacion: "admin@example.com",
+        imagen: "admin.jpg",
+        rol: "Administrador",
+      });
+
+      // Generar token JWT
       authToken = jwt.sign(
         {
           cedula: testUser.cedula,
           rol: testUser.rol,
         },
-        process.env.JWT_SECRET, // Asegúrate de que esta variable esté configurada
+        process.env.JWT_SECRET || 'secret_for_testing', // Valor por defecto para testing
         { expiresIn: "1h" }
       );
     } catch (error) {
       console.error("Error en el hook before:", error);
-      throw error; // Relanza el error para que Mocha lo capture
+      throw error;
     }
   });
 
-  // Después de las pruebas: Eliminar el usuario de prueba
+  // Después de todas las pruebas
   after(async () => {
-    if (testUser && testUser.cedula) {
-      await Usuario.destroy({ where: { cedula: testUser.cedula } });
-    }
+    await sequelize.close();
+  });
+
+  // Antes de cada prueba (opcional)
+  beforeEach(async () => {
+    // Limpiar y recrear datos de prueba si es necesario
+    await Usuario.destroy({ where: { cedula: { [Sequelize.Op.not]: ['123456789', '987654300'] } } });
   });
 
   // Pruebas para GET /usuarios
@@ -57,6 +86,7 @@ describe("UsuarioController", () => {
       const response = await request(app).get("/api/v1/usuarios");
       expect(response.status).to.equal(200);
       expect(response.body).to.be.an("array");
+      expect(response.body.length).to.be.at.least(1); // Debería incluir al menos el usuario de prueba
     });
   });
 
@@ -71,7 +101,7 @@ describe("UsuarioController", () => {
         contrasena: "password123",
         telefono: "0987654321",
         direccion_envio: "Calle Nueva 456",
-        email_facturacion: "newuser@example.com",
+        email_facturacion: "newuser1@example.com",
         imagen: "new.jpg",
         rol: "Administrador",
       };
@@ -82,13 +112,7 @@ describe("UsuarioController", () => {
 
       expect(response.status).to.equal(200);
       expect(response.body).to.have.property("message", "Usuario creado");
-      expect(response.body.nuevoUsuario).to.have.property(
-        "cedula",
-        "987654321"
-      );
-
-      // Limpiar el usuario creado
-      await Usuario.destroy({ where: { cedula: "987654321" } });
+      expect(response.body.nuevoUsuario).to.have.property("cedula", "987654321");
     });
 
     it("debería devolver un error si faltan campos obligatorios", async () => {
@@ -102,10 +126,7 @@ describe("UsuarioController", () => {
         .send(usuarioIncompleto);
 
       expect(response.status).to.equal(500);
-      expect(response.body).to.have.property(
-        "message",
-        "Error al crear el usuario"
-      );
+      expect(response.body).to.have.property("message", "Error al crear el usuario");
     });
   });
 
@@ -114,7 +135,7 @@ describe("UsuarioController", () => {
     it("debería devolver un usuario específico", async () => {
       const response = await request(app)
         .get(`/api/v1/usuarios/${testUser.cedula}`)
-        .set("Authorization", `Bearer ${authToken}`); // Incluir el token JWT
+        .set("Authorization", `Bearer ${authToken}`);
 
       expect(response.status).to.equal(200);
       expect(response.body).to.have.property("cedula", testUser.cedula);
@@ -124,13 +145,10 @@ describe("UsuarioController", () => {
       const cedulaInexistente = "000000000";
       const response = await request(app)
         .get(`/api/v1/usuarios/${cedulaInexistente}`)
-        .set("Authorization", `Bearer ${authToken}`); // Incluir el token JWT
+        .set("Authorization", `Bearer ${authToken}`);
 
       expect(response.status).to.equal(404);
-      expect(response.body).to.have.property(
-        "message",
-        "Usuario no encontrado"
-      );
+      expect(response.body).to.have.property("message", "Usuario no encontrado");
     });
   });
 
@@ -148,10 +166,7 @@ describe("UsuarioController", () => {
 
       expect(response.status).to.equal(200);
       expect(response.body).to.have.property("message", "Usuario actualizado");
-      expect(response.body.usuario).to.have.property(
-        "nombre_completo",
-        "Usuario Actualizado"
-      );
+      expect(response.body.usuario).to.have.property("nombre_completo", "Usuario Actualizado");
     });
 
     it("debería devolver un error 404 si el usuario no existe", async () => {
@@ -161,10 +176,7 @@ describe("UsuarioController", () => {
         .send({ nombre_completo: "No existe" });
 
       expect(response.status).to.equal(404);
-      expect(response.body).to.have.property(
-        "message",
-        "Usuario no encontrado"
-      );
+      expect(response.body).to.have.property("message", "Usuario no encontrado");
     });
   });
 
@@ -173,7 +185,7 @@ describe("UsuarioController", () => {
     it("debería eliminar un usuario existente", async () => {
       const response = await request(app)
         .delete(`/api/v1/usuarios/${testUser.cedula}`)
-        .set("Authorization", `Bearer ${authToken}`); // Incluir el token JWT
+        .set("Authorization", `Bearer ${authToken}`);
 
       expect(response.status).to.equal(200);
       expect(response.body).to.have.property("message", "Usuario eliminado");
@@ -183,23 +195,19 @@ describe("UsuarioController", () => {
       const cedulaInexistente = "000000000";
       const response = await request(app)
         .delete(`/api/v1/usuarios/${cedulaInexistente}`)
-        .set("Authorization", `Bearer ${authToken}`); // Incluir el token JWT
+        .set("Authorization", `Bearer ${authToken}`);
 
       expect(response.status).to.equal(404);
-      expect(response.body).to.have.property(
-        "message",
-        "Usuario no encontrado"
-      );
+      expect(response.body).to.have.property("message", "Usuario no encontrado");
     });
   });
 
   // Pruebas para POST /login
-  // Pruebas para POST /login
   describe("POST /login", () => {
     it("debería iniciar sesión y devolver un token JWT", async () => {
       const credenciales = {
-        email: "admin@admin.com", // Asegúrate de que este correo coincida con el del usuario de prueba
-        contrasena: "admin", // Asegúrate de que esta contraseña coincida con la del usuario de prueba
+        email: "admin@admin.com",
+        contrasena: "admin"
       };
 
       const response = await request(app)
@@ -222,16 +230,13 @@ describe("UsuarioController", () => {
         .send(credencialesInvalidas);
 
       expect(response.status).to.equal(404);
-      expect(response.body).to.have.property(
-        "message",
-        "Usuario no encontrado"
-      );
+      expect(response.body).to.have.property("message", "Usuario no encontrado");
     });
 
     it("debería devolver un error 401 si la contraseña es incorrecta", async () => {
       const credencialesInvalidas = {
-        email: "admin@admin.com", // Asegúrate de que este correo coincida con el del usuario de prueba
-        contrasena: "wrongpassword", // Contraseña incorrecta
+        email: "admin@admin.com",
+        contrasena: "wrongpassword",
       };
 
       const response = await request(app)
@@ -239,10 +244,7 @@ describe("UsuarioController", () => {
         .send(credencialesInvalidas);
 
       expect(response.status).to.equal(401);
-      expect(response.body).to.have.property(
-        "message",
-        "Contraseña incorrecta"
-      );
+      expect(response.body).to.have.property("message", "Contraseña incorrecta");
     });
   });
 });

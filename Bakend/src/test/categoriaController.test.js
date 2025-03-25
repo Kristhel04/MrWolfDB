@@ -1,46 +1,56 @@
 import request from "supertest";
 import { expect } from "chai";
-import app from "../../src/app.js"; // Asegúrate de exportar tu app Express
+import { Sequelize } from "sequelize";
+import app from "../../src/app.js";
 import Categoria from "../model/CategoriaModel.js";
 import fs from "fs";
 import path from "path";
 
+// 1. Configuración de la base de datos de prueba
+const sequelize = new Sequelize({
+  dialect: 'sqlite',
+  storage: ':memory:', // Base de datos en memoria
+  logging: false // Desactivar logs para mayor claridad en los tests
+});
+
 describe("CategoriaController", () => {
-  let testCategoria; // Variable para almacenar la categoría de prueba
+  let testCategoria;
 
-  // Ruta de la carpeta de imágenes
-  const uploadDir = path.join("public", "ImgCategorias");
-
-  // Antes de las pruebas: Crear una categoría de prueba
+  // 2. Configuración antes de todas las pruebas
   before(async () => {
     try {
-      // Crear una categoría de prueba con un nombre único
+      // Sincronizar modelos con la base de datos de prueba
+      await sequelize.sync({ force: true });
+      
+      // Crear categoría de prueba
       testCategoria = await Categoria.create({
-        nombre_categoria: `Categoría de prueba ${Date.now()}`, // Nombre único
+        nombre_categoria: `Categoría de prueba ${Date.now()}`,
         descripcion_categoria: "Descripción de prueba",
-        imagen: "imagen_unica.jpg", // Cambia esto a un valor único
+        imagen: "imagen_unica.jpg",
       });
     } catch (error) {
       console.error("Error en el hook before:", error);
-      console.error("Detalles del error:", error.errors); // Imprime los errores de validación
-      throw error; // Relanza el error para que Mocha lo capture
+      throw error;
     }
   });
 
-  // Después de las pruebas: Eliminar la categoría de prueba y limpiar archivos
+  // 3. Configuración después de todas las pruebas
   after(async () => {
-    if (testCategoria && testCategoria.num_categoria) {
-      // Eliminar la imagen si existe
-      if (testCategoria.imagen) {
-        const imagePath = path.join(uploadDir, testCategoria.imagen);
-        if (fs.existsSync(imagePath)) {
-          fs.unlinkSync(imagePath);
-        }
-      }
+    // Cerrar la conexión a la base de datos
+    await sequelize.close();
+  });
 
-      // Eliminar la categoría de prueba
-      await Categoria.destroy({ where: { num_categoria: testCategoria.num_categoria } });
-    }
+  // 4. Limpieza antes de cada prueba (opcional)
+  beforeEach(async () => {
+    // Limpiar la tabla de categorías antes de cada test si es necesario
+    await Categoria.destroy({ where: {} });
+    
+    // Volver a crear la categoría de prueba
+    testCategoria = await Categoria.create({
+      nombre_categoria: `Categoría de prueba ${Date.now()}`,
+      descripcion_categoria: "Descripción de prueba",
+      imagen: "imagen_unica.jpg",
+    });
   });
 
   // Pruebas para GET /categorias
