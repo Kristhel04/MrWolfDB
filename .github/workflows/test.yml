@@ -12,21 +12,17 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [18.x, 20.x, 22.x]
-        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+        node-version: [20.17.0]  # Especificando la versión exacta
 
     steps:
     - uses: actions/checkout@v4
-    
-    # Cambia al directorio 'Backend' donde está tu proyecto
     - name: Change directory to Backend
-      run: cd Bakend
-
-    - name: Use Node.js ${{ matrix.node-version }}
+      run: cd Bakend  # Cambia a la carpeta Backend
+    - name: Set up Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
-
-    - run: npm ci  # Instala las dependencias de Node.js
-    - run: npx mocha "src/test/**/*.test.js"  # Ejecuta los tests usando mocha
+    - name: Install dependencies
+      run: npm install  # Instala dependencias en Backend
+    - name: Run tests
+      run: npx mocha "src/test/**/*.test.js"  # Ejecuta los tests desde Backend
