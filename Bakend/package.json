@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "nodemon src/index.js",
-    "test": "mocha"
+    "test": "mocha src/test/**/*.test.js"
   },
   "keywords": [],
   "author": "",

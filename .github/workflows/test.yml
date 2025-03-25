@@ -12,7 +12,7 @@ jobs:
 
     strategy:
       matrix:
-        node-version: [20.17.0]  # Especificando la versión exacta
+        node-version: [20.x]  # Especificando la versión exacta
 
     steps:
     - uses: actions/checkout@v4
@@ -27,4 +27,4 @@ jobs:
     - name: Run tests
       run: |
         cd Bakend  # Cambia a la carpeta Bakend
-        npx mocha "src/test/**/*.test.js"  # Ejecuta los tests desde Bakend
+        npm test  # Ejecuta los tests desde Bakend
