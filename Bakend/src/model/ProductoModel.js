@@ -38,7 +38,11 @@ Producto.init({
     },
     id_categoria:{
         type: DataTypes.INTEGER,
-        allowNull: false
+        allowNull: false,
+        references: {
+            model: 'Categoria', // Debe coincidir con el nombre de la tabla en la base de datos
+            key: 'num_categoria'
+        }
     }
 },{
     sequelize,

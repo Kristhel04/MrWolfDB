@@ -5,6 +5,7 @@ const router = Router();
 
 // Definir rutas y asociarlas a los métodos del controlador
 router.get('/categorias', CategoriaController.getAll);
+router.get('/categorias/algunas',CategoriaController.ObtenerAlgunasCate);
 router.get('/categorias/:id', CategoriaController.getById);
 router.post('/categorias', CategoriaController.create);
 router.put('/categorias/:id', CategoriaController.update);

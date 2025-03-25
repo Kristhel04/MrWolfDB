@@ -4,6 +4,8 @@ import fs from "fs";
 import path from "path";
 import Talla from "../model/TallaModel.js";
 import ProductoTalla from "../model/ProductoTallaModel.js";
+import { Sequelize } from "sequelize";
+
 
 const ProductoController = {
   // Obtener todos los productos con sus imágenes
@@ -22,6 +24,28 @@ const ProductoController = {
         .json({ message: "Error al obtener los productos", error });
     }
   },
+  async getById(req, res) {
+    try {
+        const { id } = req.params;
+        const producto = await Producto.findByPk(id, {
+            include: [
+                { model: Talla, as: "tallas", attributes: ["nombre"] }, // Solo enviamos el nombre
+                { model: Imagen, as: "imagenes" }
+            ],
+        });
+
+        if (!producto) {
+            return res.status(404).json({ message: "Producto no encontrado" });
+        }
+        // Convertir la respuesta a JSON y asegurarnos de que las tallas sean un array de nombres
+        const productoJson = producto.toJSON();
+        productoJson.tallas = productoJson.tallas.map(talla => talla.nombre);
+
+        res.status(200).json(productoJson);
+    } catch (error) {
+        res.status(500).json({ message: "Error al obtener el producto", error });
+    }
+},
 
   // Crear un nuevo producto con imágenes
   async create(req, res) {
@@ -234,6 +258,53 @@ const ProductoController = {
             res.status(500).json({ message: "Error al eliminar el producto", error });
         }
     },
+
+    async producAleatorios(req, res) {
+      try {
+          const productos = await Producto.findAll({
+              include: [{ model: Imagen, as: "imagenes" }],
+              order: Sequelize.literal("NEWID()"),
+              limit: 20
+          });
+
+          res.status(200).json(productos);
+      } catch (error) {
+          console.error("Error al obtener productos aleatorios:", error);
+          res.status(500).json({ message: "Error al obtener productos aleatorios", error: error.message });
+      }
+    },
+
+    async getProductosPorCategoria(req, res) {
+      try {
+          const { id } = req.params;
+          const productos = await Producto.findAll({
+              where: { id_categoria: id },
+              include: [
+                  {
+                      model: Talla,
+                      as: "tallas",
+                      attributes: ["nombre"]
+                  },
+                  {
+                      model: Imagen,
+                      as: "imagenes",
+                      attributes: ["nomImagen"]
+                  }
+              ]
+          });
+  
+          const productosConImagenURL = productos.map(producto => ({
+              ...producto.dataValues,
+              imagenes: producto.imagenes.map(img => `http://localhost:3000/imagenes/${img.nomImagen}`)
+          }));
+  
+          res.status(200).json(productosConImagenURL);
+      } catch (error) {
+          res.status(500).json({ message: "Error al obtener productos", error });
+      }
+  }
+  
+  
 
 };
 
