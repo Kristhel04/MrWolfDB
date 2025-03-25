@@ -67,3 +67,4 @@ if (env !== "test") {
 }
 
 export default sequelize;
+
