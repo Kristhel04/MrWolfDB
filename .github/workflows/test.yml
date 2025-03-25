@@ -1,4 +1,4 @@
-name: run test
+name: Node.js CI
 
 on:
   push:
@@ -23,6 +23,6 @@ jobs:
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install dependencies
-      run: npm install  # Instala dependencias en Backend
+      run: npm install  # Ejecuta npm install en Backend donde está el package.json
     - name: Run tests
       run: npx mocha "src/test/**/*.test.js"  # Ejecuta los tests desde Backend
