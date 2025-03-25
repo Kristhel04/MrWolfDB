@@ -339,7 +339,25 @@ const ProductoController = {
     }
   },
 
-  
+  async getProductosPorCategoria(req, res) {
+    try {
+        const { id } = req.params;
+        const productos = await Producto.findAll({
+            where: { id_categoria: id },
+            include: [
+                {
+                    model: Imagen,
+                    as: "imagenes",
+                    attributes: ["nomImagen"]
+                }
+            ]
+        });
+        res.status(200).json(productos);
+    } catch (error) {
+        res.status(500).json({ message: "Error al obtener productos", error });
+    }
+   }
+   
 };
 
 export default ProductoController;
