@@ -2,9 +2,9 @@ name: Node.js Tests
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "Jer-laptop" ]
   pull_request:
-    branches: [ "main" ]
+    branches: [ "Jer-laptop" ]
 
 jobs:
   test:
