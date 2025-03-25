@@ -16,13 +16,15 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
-    - name: Change directory to Backend
-      run: cd Bakend  # Cambia a la carpeta Backend
     - name: Set up Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
     - name: Install dependencies
-      run: npm install  # Ejecuta npm install en Backend donde está el package.json
+      run: |
+        cd Bakend  # Cambia a la carpeta Bakend
+        npm install  # Ejecuta npm install en Bakend donde está el package.json
     - name: Run tests
-      run: npx mocha "src/test/**/*.test.js"  # Ejecuta los tests desde Backend
+      run: |
+        cd Bakend  # Cambia a la carpeta Bakend
+        npx mocha "src/test/**/*.test.js"  # Ejecuta los tests desde Bakend
