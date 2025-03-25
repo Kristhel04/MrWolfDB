@@ -1,4 +1,4 @@
-name: Node.js CI
+name: Node.js Tests
 
 on:
   push:
@@ -7,27 +7,19 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        node-version: [20.x]
+  test:
+    runs-on: windows-latest  # Ejecuta específicamente en Windows
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v4  # Descarga tu código
     
-    - name: Set up Node.js
+    - name: Setup Node.js
       uses: actions/setup-node@v4
       with:
-        node-version: ${{ matrix.node-version }}
-        # Remueve la línea de cache o usa así:
-        cache: ${{ github.workspace }}/Bakend/node_modules  # Cache alternativo
-    
-    - name: Install dependencies
-      working-directory: ./Bakend
-      run: npm install  # Esto generará el package-lock.json automáticamente
-    
-    - name: Run tests
-      working-directory: ./Bakend
-      run: npm test
+        node-version: 20.x  # Versión de Node.js
+        
+    - name: Install dependencies and run tests
+      working-directory: ./Bakend  # Accede directamente a tu carpeta
+      run: |
+        npm install
+        npm test
