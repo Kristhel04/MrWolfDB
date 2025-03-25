@@ -32,7 +32,8 @@ import Producto from "../model/ProductoModel.js";
     sequelize,
     modelName: 'Carrito',
     tableName: 'Carritos',
-    timestamps: false
+    schema: "dbo",
+    timestamps: true
 });
 
 // Aquí se define la relación
