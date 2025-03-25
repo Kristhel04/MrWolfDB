@@ -1,6 +1,5 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from '../baseDatos/connection.js';
-
 class Producto extends Model {}
 
 Producto.init({
@@ -51,6 +50,5 @@ Producto.init({
     tableName: 'Productos',
     timestamps: false
 });
-
 
 export default Producto;
