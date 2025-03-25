@@ -4,8 +4,11 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "dev": "nodemon src/index.js",
-    "test": "mocha src/test/**/*.test.js"
+    "dev": "cross-env NODE_ENV=development nodemon src/index.js",
+    "start": "cross-env NODE_ENV=production node src/index.js",
+    "test": "cross-env NODE_ENV=test mocha src/test/**/*.test.js",
+    "test:ci": "cross-env NODE_ENV=test mocha src/test/**/*.test.js --exit",
+    "test:watch": "cross-env NODE_ENV=test mocha src/test/**/*.test.js --watch"
   },
   "keywords": [],
   "author": "",
@@ -28,9 +31,11 @@
   },
   "devDependencies": {
     "chai": "^5.2.0",
+    "cross-env": "^7.0.3",
     "mocha": "^11.1.0",
     "nodemon": "^3.1.9",
     "sequelize-mock": "^0.10.2",
+    "sqlite3": "^5.1.7",
     "supertest": "^7.0.0"
   }
 }
