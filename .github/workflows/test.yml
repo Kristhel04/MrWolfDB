@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest  # Cambiado a Windows
 
     strategy:
       matrix:
@@ -24,7 +24,9 @@ jobs:
       run: |
         cd Bakend  # Cambia a la carpeta Bakend
         npm install  # Ejecuta npm install en Bakend donde está el package.json
+      shell: cmd  # Usar el shell de Windows
     - name: Run tests
       run: |
         cd Bakend  # Cambia a la carpeta Bakend
         npm test  # Ejecuta los tests desde Bakend
+      shell: cmd  # Usar el shell de Windows
