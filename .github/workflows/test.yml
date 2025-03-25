@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest  # Recomiendo usar Ubuntu en lugar de Windows para Node.js
+    runs-on: ubuntu-latest
 
     strategy:
       matrix:
@@ -17,18 +17,16 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Verify directory structure
-      run: ls -R
-    
-    - name: Set up Node.js ${{ matrix.node-version }}
+    - name: Set up Node.js
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
-        cache: 'npm'
+        # Remueve la línea de cache o usa así:
+        cache: ${{ github.workspace }}/Bakend/node_modules  # Cache alternativo
     
     - name: Install dependencies
-      working-directory: ./Bakend  # Mejor que usar cd
-      run: npm install
+      working-directory: ./Bakend
+      run: npm install  # Esto generará el package-lock.json automáticamente
     
     - name: Run tests
       working-directory: ./Bakend
