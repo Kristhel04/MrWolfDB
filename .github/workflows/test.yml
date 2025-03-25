@@ -8,25 +8,28 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest  # Cambiado a Windows
+    runs-on: ubuntu-latest  # Recomiendo usar Ubuntu en lugar de Windows para Node.js
 
     strategy:
       matrix:
-        node-version: [20.x]  # Especificando la versión exacta
+        node-version: [20.x]
 
     steps:
     - uses: actions/checkout@v4
+    
+    - name: Verify directory structure
+      run: ls -R
+    
     - name: Set up Node.js ${{ matrix.node-version }}
       uses: actions/setup-node@v4
       with:
         node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    
     - name: Install dependencies
-      run: |
-        cd Bakend  # Cambia a la carpeta Bakend
-        npm install  # Ejecuta npm install en Bakend donde está el package.json
-      shell: cmd  # Usar el shell de Windows
+      working-directory: ./Bakend  # Mejor que usar cd
+      run: npm install
+    
     - name: Run tests
-      run: |
-        cd Bakend  # Cambia a la carpeta Bakend
-        npm test  # Ejecuta los tests desde Bakend
-      shell: cmd  # Usar el shell de Windows
+      working-directory: ./Bakend
+      run: npm test
