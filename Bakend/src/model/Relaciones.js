@@ -19,8 +19,8 @@ Producto.belongsToMany(Talla, { through: ProductoTalla, foreignKey: 'id_producto
 Talla.belongsToMany(Producto, { through: ProductoTalla, foreignKey: 'id_talla', as: 'productos' });
 
 // Relación Carrito - Producto (N:M a través de CarritoProducto)
-Carrito.belongsToMany(Producto, { through: CarritoProducto, foreignKey: 'id_carrito', as: 'productos' });
-Producto.belongsToMany(Carrito, { through: CarritoProducto, foreignKey: 'id_producto', as: 'carritos' });
+//Carrito.belongsToMany(Producto, { through: CarritoProducto, foreignKey: 'id_carrito', as: 'productos' });
+//Producto.belongsToMany(Carrito, { through: CarritoProducto, foreignKey: 'id_producto', as: 'carritos' });
 
 // Mensaje de confirmación
 export default function ConfRelaciones() {
