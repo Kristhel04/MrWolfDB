@@ -13,21 +13,7 @@ import Producto from "../model/ProductoModel.js";
         usuarioId: {
             type: DataTypes.INTEGER,
             allowNull: false,
-        },
-    
-    productoId: {
-        type:DataTypes.INTEGER,
-        allowNull: false,
-        references: {
-            model: Producto,
-            key: 'id'
         }
-    },
-    cantidad: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-        defaultValue: 1
-    }
 }, {
     sequelize,
     modelName: 'Carrito',
@@ -36,8 +22,7 @@ import Producto from "../model/ProductoModel.js";
     timestamps: true
 });
 
+export default Carrito;
 // Aquí se define la relación
 Carrito.belongsTo(Producto, { foreignKey: 'productoId' });
 Producto.hasMany(Carrito, { foreignKey: 'productoId' });
-
-export default Carrito;

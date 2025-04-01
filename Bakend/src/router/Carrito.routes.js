@@ -1,12 +1,11 @@
 import {Router} from 'express';
-import CarritoController from '../Controller/CarritoController.js';
+import  { addToCarrito, getCarrito, removeFromCarrito }from '../Controller/CarritoController.js';
 
 const router = Router();
 
-router.get('/carrito/:usuarioId', CarritoController.getCarrito);
-router.post('/carrito', CarritoController.addToCarrito);
-router.put('/carrito', CarritoController.updateCarrito);
-router.delete('/carrito', CarritoController.removeFromCarrito);
-router.delete('/carrito/:usuarioId', CarritoController.clearCarrito);
+router.post("/cart/add", addToCarrito);       // Agregar producto al carrito
+router.get("/cart", getCarrito);              // Obtener el carrito
+router.delete("/cart/remove", removeFromCarrito); // Eliminar producto del carrito
+
 
 export default router;
