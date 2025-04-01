@@ -14,8 +14,9 @@ router.put("/productos/:id", upload.array("imagen", 5), ProductoController.updat
 router.get('/productos/aleatorios',ProductoController.producAleatorios);
 router.get('/productos/:id', ProductoController.getById);
 router.delete('/productos/:id', ProductoController.delete);
-router.get('/productos/M',ProductoController.ProductosMasculinos);
-router.get('/productos/F',ProductoController.ProductosFemeninos);
+router.get('/productos/genero/masculino', ProductoController.ProductosMasculinos);
+router.get('/productos/genero/femenino', ProductoController.ProductosFemeninos);
+
 
 
 export default router;
