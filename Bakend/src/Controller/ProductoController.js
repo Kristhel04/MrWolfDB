@@ -28,7 +28,7 @@ const ProductoController = {
         const { id } = req.params;
         const producto = await Producto.findByPk(id, {
             include: [
-                { model: Talla, as: "tallas", attributes: ["nombre"] }, // Solo enviamos el nombre
+                { model: Talla, as: "tallas", attributes: ["id", "nombre"] }, // Mantener id y nombre
                 { model: Imagen, as: "imagenes" }
             ],
         });
@@ -36,11 +36,8 @@ const ProductoController = {
         if (!producto) {
             return res.status(404).json({ message: "Producto no encontrado" });
         }
-        // Convertir la respuesta a JSON y asegurarnos de que las tallas sean un array de nombres
-        const productoJson = producto.toJSON();
-        productoJson.tallas = productoJson.tallas.map(talla => talla.nombre);
 
-        res.status(200).json(productoJson);
+        res.status(200).json(producto); // Enviar producto directamente sin modificar tallas
     } catch (error) {
         res.status(500).json({ message: "Error al obtener el producto", error });
     }

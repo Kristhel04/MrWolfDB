@@ -3,8 +3,7 @@ import Categoria from './CategoriaModel.js';
 import Imagen from './ImagenModel.js';
 import Talla from './TallaModel.js';
 import ProductoTalla from './ProductoTallaModel.js';
-import Carrito from './CarritoModel.js';
-import CarritoProducto from './CarritoProductoModel.js';
+
 
 // Relación Categoría - Producto (1:N)
 Categoria.hasMany(Producto, { foreignKey: 'id_categoria', as: 'productos' });
