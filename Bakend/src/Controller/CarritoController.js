@@ -66,9 +66,30 @@ export const addToCarrito = async (req, res) => {
 };
 
 export const getCarrito = (req, res) => {
-    req.session.cart = req.session.cart || [];
-    res.json(req.session.cart);
+    console.log("Carrito actual en sesión:", req.session.cart);
+    try {
+
+        // Verificar si la sesión está disponible
+        if (!req.session) {
+            return res.status(500).json({ message: "Error en la sesión del usuario." });
+        }
+
+        // Inicializar el carrito si no existe
+        req.session.cart = req.session.cart || [];
+
+        // Verificar si el carrito está vacío
+        if (req.session.cart.length === 0) {
+            return res.json({ message: "El carrito está vacío", cart: [] });
+        }
+
+        // Responder con el carrito actual
+        res.json({ cart: req.session.cart });
+    } catch (error) {
+        console.error("Error en getCarrito:", error);
+        res.status(500).json({ message: "Error en el servidor", error: error.message });
+    }
 };
+
 
 export const removeFromCarrito = (req, res) => {
     try {
