@@ -1,6 +1,10 @@
 import Producto from "../model/ProductoModel.js";
+import Imagen from "../model/ImagenModel.js";
 import Talla from "../model/TallaModel.js";
+import ProductoTalla from "../model/ProductoTallaModel.js";
+import { Sequelize } from "sequelize";
 
+// Función para agregar al carrito
 export const addToCarrito = async (req, res) => {
     try {
         const { productId, tallaId, quantity = 1 } = req.body;
@@ -14,7 +18,13 @@ export const addToCarrito = async (req, res) => {
             return res.status(400).json({ message: "Cantidad inválida: debe ser un número mayor a 0." });
         }
 
-        const product = await Producto.findByPk(productId);
+        // Incluir imágenes en la consulta del producto
+        const product = await Producto.findByPk(productId, {
+            include: [
+                { model: Imagen, as: "imagenes", attributes: ["nomImagen"] }, // Obtener solo las imágenes
+            ],
+        });
+
         if (!product) {
             return res.status(404).json({ message: "Producto no encontrado." });
         }
@@ -32,6 +42,9 @@ export const addToCarrito = async (req, res) => {
 
         const existingProductIndex = req.session.cart.findIndex(p => p.id === product.id && p.tallaId === talla.id);
 
+        // Seleccionar la imagen del producto (usar la primera imagen si existen)
+        const productImage = product.imagenes && product.imagenes.length > 0 ? product.imagenes[0].nomImagen : 'default.jpg';
+
         if (existingProductIndex !== -1) {
             req.session.cart[existingProductIndex].quantity += qty;
         } else {
@@ -39,19 +52,18 @@ export const addToCarrito = async (req, res) => {
                 id: product.id,
                 nombre: product.nombre,
                 precio: product.precio,
-                imagen: product.imagen || null,
+                imagen: productImage, // Asignar la imagen correcta
                 tallaId: talla.id,
                 tallaNombre: talla.nombre,
                 quantity: qty
             });
         }
-   
+
         req.session.save(err => {
             if (err) {
                 console.error("Error guardando la sesión:", err);
                 return res.status(500).json({ message: "Error guardando la sesión" });
             }
-            console.log("Sesión guardada correctamente:", req.session);
             res.json({ message: "Producto agregado al carrito", cart: req.session.cart });
         });
 
@@ -60,6 +72,7 @@ export const addToCarrito = async (req, res) => {
         res.status(500).json({ message: "Error en el servidor", error: error.message });
     }
 };
+
 
 
 export const getCarrito = (req, res) => {
