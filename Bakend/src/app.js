@@ -16,11 +16,11 @@ const app = express();
 //console.log("Cargando middleware de sesión..."); // Agrega esto para depuración
 app.use(sessionMiddleware);
 app.use((req, res, next) => {
-    if (!req.session.cart) {
-        req.session.cart = [];
-    }
+    console.log("Sesión actual:", req.session);
+    console.log("ID de sesión:", req.sessionID);
     next();
 });
+
 
 app.use(cors({
     origin: "http://localhost:5173", // ⚡ Cambia esto según el puerto de tu frontend
