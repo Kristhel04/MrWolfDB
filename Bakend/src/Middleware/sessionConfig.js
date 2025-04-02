@@ -1,9 +1,10 @@
 import session from "express-session";
 console.log("Middleware de sesión cargado correctamente");
 
+
 const sessionMiddleware = session({
     secret: process.env.SESSION_SECRET, 
-    resave: false,
+    resave: true,
     saveUninitialized: true,
     cookie: {
         httpOnly: true,

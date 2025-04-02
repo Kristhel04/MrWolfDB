@@ -15,11 +15,13 @@ import path from 'path';
 const app = express();
 //console.log("Cargando middleware de sesión..."); // Agrega esto para depuración
 app.use(sessionMiddleware);
-console.log("Middleware de sesión aplicado correctamente.");
 app.use((req, res, next) => {
-    console.log("🔍 Estado de la sesión:", req.session);
+    console.log("Sesión actual:", req.session);
+    console.log("ID de sesión:", req.sessionID);
     next();
 });
+
+
 app.use(cors({
     origin: "http://localhost:5173", // ⚡ Cambia esto según el puerto de tu frontend
     credentials: true // 💡 Permite que se envíen cookies y sesiones en la petición
