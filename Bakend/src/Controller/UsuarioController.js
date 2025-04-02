@@ -158,13 +158,27 @@ class UsuarioController {
 
   async logout(req, res) {
     try {
+      // Limpiar el carrito de la sesión
+      if (req.session) {
+        req.session.cart = []; // Vacía el carrito de la sesión
+      }
+  
       // Elimina la cookie del refreshToken
       res.clearCookie("refreshToken");
-      res.json({ message: "Sesión cerrada exitosamente" });
+  
+      // Finaliza la sesión
+      req.session.destroy(err => {
+        if (err) {
+          return res.status(500).json({ message: "Error al cerrar sesión", error: err });
+        }
+        
+        res.json({ message: "Sesión cerrada exitosamente y carrito limpiado." });
+      });
     } catch (error) {
       res.status(500).json({ message: "Error al cerrar sesión", error });
     }
   }
+  
 
   async deleteUser(req, res) {
     try {

@@ -101,4 +101,45 @@ export const removeFromCarrito = (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Error en el servidor', error });
     }
+
+};
+export const updateCarrito = async (req, res) => {
+    try {
+        const { productId, tallaId, quantity } = req.body;
+
+        if (!productId || !tallaId || isNaN(productId) || isNaN(tallaId)) {
+            return res.status(400).json({ message: "Datos inválidos: productId y tallaId son requeridos y deben ser números." });
+        }
+
+        const qty = parseInt(quantity, 10);
+        if (isNaN(qty) || qty <= 0) {
+            return res.status(400).json({ message: "Cantidad inválida: debe ser un número mayor a 0." });
+        }
+
+        if (!req.session || !req.session.cart) {
+            return res.status(400).json({ message: "El carrito está vacío." });
+        }
+
+        const productIndex = req.session.cart.findIndex(p => p.id === productId && p.tallaId === tallaId);
+        if (productIndex === -1) {
+            return res.status(404).json({ message: "Producto no encontrado en el carrito." });
+        }
+        
+        req.session.cart[productIndex].quantity = qty;
+
+        req.session.save(err => {
+            if (err) {
+                console.error("Error guardando la sesión:", err);
+                return res.status(500).json({ message: "Error guardando la sesión" });
+            }
+            res.json({ 
+                message: "Cantidad actualizada", 
+                cart: req.session.cart
+            });
+        });
+
+    } catch (error) {
+        console.error("Error en updateCarrito:", error);
+        res.status(500).json({ message: "Error en el servidor", error: error.message });
+    }
 };
