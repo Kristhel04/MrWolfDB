@@ -1,135 +1,104 @@
-import Carrito from "../model/CarritoModel.js";
 import Producto from "../model/ProductoModel.js";
-import ProductoTalla from "../model/ProductoTallaModel.js"; // Importar la tabla intermedia
+import Talla from "../model/TallaModel.js";
 
-const calcularTotal = (precio, cantidad) => precio * cantidad;
+export const addToCarrito = async (req, res) => {
+    try {
+        const { productId, tallaId, quantity = 1 } = req.body;
 
-const CarritoController = {
-    async getCarrito(req, res) {
-        try {
-            const usuarioId = Number(req.params.usuarioId);
-
-            if (isNaN(usuarioId)) {
-                return res.status(400).json({ error: 'El usuarioId debe ser un número' });
-            }
-            const carrito = await Carrito.findAll({
-                where: { usuarioId },
-                include: [{
-                    model: Producto,
-                    attributes: ['nombre', 'precio', 'imagen'],
-                    include: [{
-                        model: ProductoTalla,
-                        attributes: ['talla']
-                    }]
-                }]
-            });
-
-            if (carrito.length === 0) {
-                return res.status(404).json({ message: 'Carrito no encontrado para este usuario' });
-            }
-
-            const productosCarrito = carrito.map(item => {
-                const total = calcularTotal(item.Producto.precio, item.cantidad);
-                return {
-                    nombre: item.Producto.nombre,
-                    precio: item.Producto.precio,
-                    talla: item.Producto.ProductoTalla?.talla || 'No disponible',
-                    imagen: item.Producto.imagen,
-                    cantidad: item.cantidad,
-                    total
-                };
-            });
-
-            res.json(productosCarrito);
-        } catch (error) {
-            console.error('Error al obtener el carrito:', error);
-            res.status(500).json({ error: 'Error interno del servidor' });
+        if (!productId || !tallaId || isNaN(productId) || isNaN(tallaId)) {
+            return res.status(400).json({ message: "Datos inválidos: productId y tallaId son requeridos y deben ser números." });
         }
-    },
 
-    async addToCarrito(req, res) {
-        try {
-            const { usuarioId, productoId, cantidad } = req.body;
+        const qty = parseInt(quantity, 10);
+        if (isNaN(qty) || qty <= 0) {
+            return res.status(400).json({ message: "Cantidad inválida: debe ser un número mayor a 0." });
+        }
 
-            if (!usuarioId || !productoId || cantidad <= 0) {
-                return res.status(400).json({ message: 'Datos inválidos' });
-            }
+        const product = await Producto.findByPk(productId);
+        if (!product) {
+            return res.status(404).json({ message: "Producto no encontrado." });
+        }
 
-            const productoExistente = await Carrito.findOne({
-                where: { usuarioId, productoId }
+        const talla = await Talla.findByPk(tallaId);
+        if (!talla) {
+            return res.status(404).json({ message: "Talla no encontrada." });
+        }
+
+        if (!req.session) {
+            return res.status(500).json({ message: "Error en la sesión del usuario." });
+        }
+
+        req.session.cart = req.session.cart || [];
+
+        const existingProductIndex = req.session.cart.findIndex(p => p.id === product.id && p.tallaId === talla.id);
+
+        if (existingProductIndex !== -1) {
+            req.session.cart[existingProductIndex].quantity += qty;
+        } else {
+            req.session.cart.push({
+                id: product.id,
+                nombre: product.nombre,
+                precio: product.precio,
+                imagen: product.imagen || null,
+                tallaId: talla.id,
+                tallaNombre: talla.nombre,
+                quantity: qty
             });
-            
-            if (productoExistente) {
-                productoExistente.cantidad += cantidad;
-                await productoExistente.save();
-            } else {
-                await Carrito.create({ usuarioId, productoId, cantidad });
-            }
-            
-            res.status(200).json({ message: 'Producto agregado al carrito' });
-        } catch (error) {
-            console.error(error);
-            res.status(500).json({ message: 'Error al agregar al carrito', error: error.message });
         }
-    },
-
-    async updateCarrito(req, res) {
-        try {
-            const { productoId, cantidad } = req.body;
-
-            if (!productoId || cantidad == null || cantidad < 1) {
-                return res.status(400).json({ error: "Datos inválidos" });
+   
+        req.session.save(err => {
+            if (err) {
+                console.error("Error guardando la sesión:", err);
+                return res.status(500).json({ message: "Error guardando la sesión" });
             }
+            console.log("Sesión guardada correctamente:", req.session);
+            res.json({ message: "Producto agregado al carrito", cart: req.session.cart });
+        });
 
-            const productoEnCarrito = await Carrito.findOne({ where: { productoId } });
-
-            if (!productoEnCarrito) {
-                return res.status(404).json({ error: "Producto no encontrado en el carrito" });
-            }
-
-            await productoEnCarrito.update({ cantidad });
-
-            res.json({ message: "Cantidad actualizada correctamente" });
-        } catch (error) {
-            res.status(500).json({ error: "Error en el servidor" });
-        }
-    },
-
-    async removeFromCarrito(req, res) {
-        try {
-            const { usuarioId, productoId } = req.body;
-
-            const eliminado = await Carrito.destroy({
-                where: { usuarioId, productoId }
-            });
-
-            if (!eliminado) {
-                return res.status(404).json({ message: 'Producto no encontrado en el carrito' });
-            }
-
-            res.status(200).json({ message: 'Producto eliminado del carrito' });
-        } catch (error) {
-            res.status(500).json({ message: 'Error al eliminar producto del carrito', error: error.message });
-        }
-    },
-
-    async clearCarrito(req, res) {
-        try {
-            const { usuarioId } = req.params;
-
-            const eliminado = await Carrito.destroy({
-                where: { usuarioId }
-            });
-
-            if (!eliminado) {
-                return res.status(404).json({ message: 'Carrito no encontrado' });
-            }
-
-            res.status(200).json({ message: 'Carrito vaciado' });
-        } catch (error) {
-            res.status(500).json({ message: 'Error al vaciar el carrito', error: error.message });
-        }
+    } catch (error) {
+        console.error("Error en addToCarrito:", error);
+        res.status(500).json({ message: "Error en el servidor", error: error.message });
     }
 };
 
-export default CarritoController;
+
+export const getCarrito = (req, res) => {
+    console.log("Estado actual de la sesión en getCarrito:", req.session);
+
+    try {
+        if (!req.session) {
+            return res.status(500).json({ message: "Error en la sesión del usuario." });
+        }
+
+        req.session.cart = req.session.cart || [];
+
+        console.log("Carrito en getCarrito después de inicialización:", req.session.cart);
+
+        res.json({ cart: req.session.cart });
+    } catch (error) {
+        console.error("Error en getCarrito:", error);
+        res.status(500).json({ message: "Error en el servidor", error: error.message });
+    }
+};
+
+
+
+export const removeFromCarrito = (req, res) => {
+    try {
+        const { productId, tallaId } = req.body;
+        if (!req.session.cart || req.session.cart.length === 0) {
+            return res.status(400).json({ message: 'El carrito está vacío' });
+        }
+
+        const initialLength = req.session.cart.length;
+        req.session.cart = req.session.cart.filter(p => !(p.id === productId && p.tallaId === tallaId));
+
+        if (req.session.cart.length === initialLength) {
+            return res.status(404).json({ message: 'Producto no encontrado en el carrito' });
+        }
+
+        res.json({ message: 'Producto eliminado', cart: req.session.cart });
+    } catch (error) {
+        res.status(500).json({ message: 'Error en el servidor', error });
+    }
+};

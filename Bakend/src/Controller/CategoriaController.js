@@ -70,23 +70,27 @@ const CategoriaController = {
 
     // Crear una nueva categoría 
     async create(req, res) {
-        upload(req, res, async (err) => {
-            if (err) {
-                return res.status(400).json({ message: err.message });
-            }
-            try {
-                const { nombre_categoria, descripcion_categoria } = req.body;
-                const imagen = req.file ? req.file.filename : null;
-                const nuevaCategoria = await Categoria.create({
-                    nombre_categoria,
-                    descripcion_categoria,
-                    imagen
-                });
-                res.status(201).json(nuevaCategoria);
-            } catch (error) {
-                res.status(500).json({ message: "Error al crear la categoría", error });
-            }
-        });
+      upload(req, res, async (err) => {
+        if (err) {
+          console.error("Error en multer:", err); // Log del error de multer
+          return res.status(400).json({ message: err.message });
+        }
+        try {
+          const { nombre_categoria, descripcion_categoria } = req.body;
+          const imagen = req.file ? req.file.filename : null;
+          console.log("Datos recibidos:", { nombre_categoria, descripcion_categoria, imagen }); // Log de los datos recibidos
+    
+          const nuevaCategoria = await Categoria.create({
+            nombre_categoria,
+            descripcion_categoria,
+            imagen,
+          });
+          res.status(201).json(nuevaCategoria);
+        } catch (error) {
+          console.error("Error al crear la categoría:", error); // Log del error en la base de datos
+          res.status(500).json({ message: "Error al crear la categoría", error });
+        }
+      });
     },
 
     // Actualizar una categoría 
