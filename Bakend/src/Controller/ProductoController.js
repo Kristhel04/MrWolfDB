@@ -43,71 +43,80 @@ const ProductoController = {
     }
 },
 
-  // Crear un nuevo producto con imágenes
-  async create(req, res) {
-    try {
-      console.log("Datos recibidos:", req.body); // Verificar los datos recibidos
-      console.log("Archivos recibidos:", req.files); // Verificar las imágenes
+ // Crear un nuevo producto con imágenes
+async create(req, res) {
+  try {
+    console.log("Datos recibidos:", req.body); // Verificar los datos recibidos
+    console.log("Archivos recibidos:", req.files); // Verificar las imágenes
 
-      const {
-        codigo,
-        nombre,
-        precio,
-        descripcion,
-        estado,
-        genero_dirigido,
-        id_categoria,
-        tallas, // Aquí recibes las tallas como una cadena
-      } = req.body;
+    const {
+      codigo,
+      nombre,
+      precio,
+      descripcion,
+      estado,
+      genero_dirigido,
+      id_categoria,
+      tallas,
+    } = req.body;
 
-      const precioNum = parseFloat(precio);
-      const codigoNum = parseInt(codigo);
+    const precioNum = parseFloat(precio);
+    const codigoNum = parseInt(codigo);
 
-      // Crear el nuevo producto
-      const nuevoProducto = await Producto.create({
-        codigo,
-        nombre,
-        precio,
-        descripcion,
-        estado,
-        genero_dirigido,
-        id_categoria,
-      });
+    // Crear el nuevo producto
+    const nuevoProducto = await Producto.create({
+      codigo,
+      nombre,
+      precio,
+      descripcion,
+      estado,
+      genero_dirigido,
+      id_categoria,
+    });
 
-      // Procesar las tallas y asociarlas al producto
-      if (tallas) {
-        const tallasArray = tallas.split(",").map((id) => ({
-          id_producto: nuevoProducto.id,
-          id_talla: parseInt(id.trim()), // trim para quitar espacios
-        }));
+    // Procesar las tallas y asociarlas al producto
+    if (tallas) {
+      const tallasArray = tallas.split(",").map((id) => ({
+        id_producto: nuevoProducto.id,
+        id_talla: parseInt(id.trim()),
+      }));
 
-        console.log("Tallas procesadas:", tallasArray); // Depuración
+      console.log("Tallas procesadas:", tallasArray);
 
-        // Insertar las tallas en la tabla intermedia ProductoTalla
-        await ProductoTalla.bulkCreate(tallasArray);
-        console.log("Tallas insertadas en ProductoTalla"); // Confirmación de inserción
-      }
-
-      // Guardar imágenes si existen
-      if (req.files && req.files.length > 0) {
-        const imagenesData = req.files.map((file) => ({
-          id_producto: nuevoProducto.id,
-          nomImagen: file.filename,
-        }));
-        console.log("Archivos procesados:", imagenesData); // Depuración
-        await Imagen.bulkCreate(imagenesData);
-        console.log("Imágenes insertadas en Imagen"); // Confirmación de inserción
-      }
-
-      res.status(201).json({
-        message: "Producto agregado correctamente",
-        producto: nuevoProducto,
-      });
-    } catch (error) {
-      console.error("Error al agregar producto:", error); // Detalles del error
-      res.status(500).json({ message: "Error al agregar el producto", error });
+      await ProductoTalla.bulkCreate(tallasArray);
+      console.log("Tallas insertadas en ProductoTalla");
     }
-  },
+
+    // Guardar imágenes si existen, si no, usar imagen genérica
+    let imagenesData = [];
+
+    if (req.files && req.files.length > 0) {
+      imagenesData = req.files.map((file) => ({
+        id_producto: nuevoProducto.id,
+        nomImagen: file.filename,
+      }));
+      console.log("Archivos procesados:", imagenesData);
+    } else {
+      // Si no se subieron imágenes, agregar imagen genérica
+      imagenesData.push({
+        id_producto: nuevoProducto.id,
+        nomImagen: "OPI.jpeg", 
+      });
+      console.log("No se subieron imágenes, se usará la imagen genérica OPI.jpeg");
+    }
+
+    await Imagen.bulkCreate(imagenesData);
+    console.log("Imágenes insertadas en Imagen");
+
+    res.status(201).json({
+      message: "Producto agregado correctamente",
+      producto: nuevoProducto,
+    });
+  } catch (error) {
+    console.error("Error al agregar producto:", error);
+    res.status(500).json({ message: "Error al agregar el producto", error });
+  }
+},
 
   // Obtener productos masculinos
   async ProductosMasculinos(req, res) {
