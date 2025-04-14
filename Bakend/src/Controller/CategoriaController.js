@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import multer from "multer";
 import Categoria from "../model/CategoriaModel.js";
+import Producto from "../model/ProductoModel.js";
 import { Sequelize } from "sequelize";
 
 // Definir la carpeta de almacenamiento
@@ -52,7 +53,26 @@ const CategoriaController = {
             res.status(500).json({ message: "Error al obtener las categorías", error });
         }
     },
-    
+    async CategoriasProductos(req, res) {
+      try {
+          const categorias = await Categoria.findAll({
+            include: [{
+              model: Producto,
+              as: 'productos',
+              attributes: [],
+              required: true
+          }]
+          });
+          const categoriasConImagenURL = categorias.map(categoria => ({
+              ...categoria.dataValues,
+              imagen: categoria.imagen ? `http://localhost:3000/imagenes/${categoria.imagen}` : null
+          }));
+  
+          res.status(200).json(categoriasConImagenURL);
+      } catch (error) {
+          res.status(500).json({ message: "Error al obtener las categorías", error });
+      }
+  },
     async getById(req, res) {
         try {
             const { id } = req.params;
@@ -166,26 +186,7 @@ const CategoriaController = {
         } catch (error) {
             res.status(500).json({ message: "Error al eliminar la categoría", error });
         }
-    },
-    async ObtenerAlgunasCate(req, res) {
-      try {
-          const categorias = await Categoria.findAll({
-              attributes: ['num_categoria', 'nombre_categoria', 'imagen'],
-              order: [['num_categoria', 'ASC']],
-              limit: 5
-          });
-  
-          const categoriasConImagenURL = categorias.map(categoria => ({
-              ...categoria.dataValues,
-              imagen: categoria.imagen ? `http://localhost:3000/imagenes/${categoria.imagen}` : null
-          }));
-  
-          res.status(200).json(categoriasConImagenURL);
-      } catch (error) {
-          res.status(500).json({ message: "Error al obtener las categorías", error });
       }
-  }
-  
-  
+   
   };
 export default CategoriaController;
