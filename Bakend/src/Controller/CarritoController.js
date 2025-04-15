@@ -43,11 +43,26 @@ export const addToCarrito = async (req, res) => {
         const existingProductIndex = req.session.cart.findIndex(p => p.id === product.id && p.tallaId === talla.id);
 
         // Seleccionar la imagen del producto (usar la primera imagen si existen)
+        
         const productImage = product.imagenes && product.imagenes.length > 0 ? product.imagenes[0].nomImagen : 'default.jpg';
 
         if (existingProductIndex !== -1) {
+            const currentQty = req.session.cart[existingProductIndex].quantity;
+
+            //Aquí se valida si se pasa de 5
+            if (currentQty + qty > 5) {
+                return res.status(400).json({
+                    message: "No puedes agregar más de 5 unidades del mismo producto con la misma talla."
+                });
+            }
+
             req.session.cart[existingProductIndex].quantity += qty;
         } else {
+            if (qty > 5) {
+                return res.status(400).json({
+                    message: "No puedes agregar más de 5 unidades del mismo producto con la misma talla."
+                });
+            }
             req.session.cart.push({
                 id: product.id,
                 nombre: product.nombre,
