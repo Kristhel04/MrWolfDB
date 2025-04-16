@@ -133,7 +133,7 @@ const ProductoController = {
   async ProductosFemeninos(req, res) {
     try {
       const productos = await Producto.findAll({
-        where: { genero_dirigido: "Femenino" }, // Corregido: "Femenino" en lugar de "Femenido"
+        where: { genero_dirigido: "Femenino" }, 
         include: [{ model: Imagen, as: "imagenes" }],
       });
       if (productos.length === 0) {

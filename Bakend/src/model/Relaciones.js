@@ -6,8 +6,8 @@ import ProductoTalla from './ProductoTallaModel.js';
 
 
 // Relación Categoría - Producto (1:N)
-Categoria.hasMany(Producto, { foreignKey: 'id_categoria', as: 'productos' });
-Producto.belongsTo(Categoria, { foreignKey: 'id_categoria', as: 'categoria' });
+Categoria.hasMany(Producto, { foreignKey: 'id_categoria',sourceKey: 'num_categoria',  as: 'productos' });
+Producto.belongsTo(Categoria, { foreignKey: 'id_categoria',sourceKey: 'num_categoria', as: 'categoria' });
 
 // Relación Producto - Imagen (1:N)
 Producto.hasMany(Imagen, { foreignKey: "id_producto", as: 'imagenes' });
