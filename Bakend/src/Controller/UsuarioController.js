@@ -14,7 +14,7 @@ class UsuarioController {
 
   async createUser(req, res) {
     try {
-      console.log("Datos recibidos:", req.body);
+      console.log("Datos recibidos :", req.body);
       const {
         cedula,
         nombre_usuario,
