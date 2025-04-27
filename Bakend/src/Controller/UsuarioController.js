@@ -139,7 +139,7 @@ class UsuarioController {
         process.env.JWT_SECRET,
         { expiresIn: "1h" } // El token expira en 1 hora
       );
-  
+
       console.log("JWT_SECRET:", process.env.JWT_SECRET); // Mueve el console.log fuera de jwt.sign
       console.log("Token generado:", token);
       res.json({
@@ -162,23 +162,26 @@ class UsuarioController {
       if (req.session) {
         req.session.cart = []; // Vacía el carrito de la sesión
       }
-  
+
       // Elimina la cookie del refreshToken
       res.clearCookie("refreshToken");
-  
+
       // Finaliza la sesión
-      req.session.destroy(err => {
+      req.session.destroy((err) => {
         if (err) {
-          return res.status(500).json({ message: "Error al cerrar sesión", error: err });
+          return res
+            .status(500)
+            .json({ message: "Error al cerrar sesión", error: err });
         }
-        
-        res.json({ message: "Sesión cerrada exitosamente y carrito limpiado." });
+
+        res.json({
+          message: "Sesión cerrada exitosamente y carrito limpiado.",
+        });
       });
     } catch (error) {
       res.status(500).json({ message: "Error al cerrar sesión", error });
     }
   }
-  
 
   async deleteUser(req, res) {
     try {
@@ -220,6 +223,31 @@ class UsuarioController {
       res.status(403).json({ message: "Refresh token inválido o expirado" });
     }
   }
+
+
+  async restablecerContrasena(req, res) {
+    const { email, codigo, nuevaContrasena } = req.body;
+  
+    try {
+      const registro = await CodigoRecuperacion.findOne({
+        where: { email, codigo, expiracion: { [Op.gt]: new Date() } },
+      });
+  
+      if (!registro) {
+        return res.status(400).json({ message: "Código inválido o expirado" });
+      }
+  
+      // Llamada directa al método con parámetros
+      await UsuarioController.actualizarContrasenaDirecto(email, nuevaContrasena);
+      
+      await registro.destroy();
+      res.json({ message: "Contraseña actualizada correctamente" });
+    } catch (error) {
+      console.error("💥 Error al restablecer contraseña:", error);
+      res.status(500).json({ message: "Error al restablecer contraseña", error });
+    }
+  }
+
 }
 
 export default new UsuarioController();
