@@ -248,6 +248,35 @@ class UsuarioController {
     }
   }
 
+  async getProfile(req, res) {
+    try {
+      const { cedula } = req.user; // cedula viene del token decodificado por el middleware
+      const usuario = await Usuario.findByPk(cedula, {
+        attributes: [
+          "cedula",
+          "nombre_usuario",
+          "nombre_completo",
+          "email",
+          "telefono",
+          "direccion_envio",
+          "email_facturacion",
+          "imagen",
+          "rol",
+        ],
+      });
+
+      if (!usuario) {
+        return res.status(404).json({ message: "Usuario no encontrado" });
+      }
+
+      res.json(usuario);
+    } catch (error) {
+      res.status(500).json({ message: "Error al obtener el perfil", error });
+    }
+  }
+
+
+
 }
 
 export default new UsuarioController();
