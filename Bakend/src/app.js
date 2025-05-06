@@ -1,4 +1,5 @@
 import express from 'express';
+import recuperacionR from './router/Recuperacion.routes.js';
 import usuariosR from './router/Usuario.routes.js';
 import productosR from './router/Producto.routes.js';
 import categoriasR from './router/Categoria.routes.js';
@@ -55,7 +56,7 @@ app.use('/api/v1', productosR);
 app.use('/api/v1', categoriasR);
 app.use('/api/v1', TallaR);
 app.use('/api/v1', carritosR);
-
+app.use('/api/v1', recuperacionR);
 
 
 
