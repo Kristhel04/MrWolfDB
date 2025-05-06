@@ -3,9 +3,10 @@ import FacturaController from '../Controller/FacturaController.js';
 import { authenticateToken, authorizeRole } from '../Middleware/JwtAuth.js';
 
 const router = express.Router();
-
+router.get('/factura/:id', authenticateToken, FacturaController.verFacturaPorId);
 // Crear una nueva factura (usuario autenticado)
 router.post('/crear/Factura', authenticateToken, FacturaController.create);
+
 
 // Obtener facturas del usuario autenticado
 router.get('/usuario', authenticateToken, FacturaController.getFacturasUsuario);
@@ -14,6 +15,6 @@ router.get('/usuario', authenticateToken, FacturaController.getFacturasUsuario);
 router.get('/admin', authenticateToken, authorizeRole(['admin']), FacturaController.getAll);
 
 // Descargar factura en PDF
-router.get('/pdf/:id', authenticateToken, FacturaController.generarFacturaPDF);
+router.get('/pdf/:id',FacturaController.generarFacturaPDF);
 
 export default router;

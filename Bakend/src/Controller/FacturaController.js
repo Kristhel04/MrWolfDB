@@ -5,6 +5,7 @@ import { DateTime } from "luxon";
 import Factura from "../model/FacturaModel.js";
 import DetalleFactura from "../model/DetalleFacturaModel.js";
 import Usuario from "../model/UsuarioModel.js";
+import Producto from "../model/ProductoModel.js";
 
 const pdfDir = path.join("public", "facturasPDF");
 if (!fs.existsSync(pdfDir)) {
@@ -77,18 +78,18 @@ const FacturaController = {
         fecha_emision: DateTime.now().setZone("America/Costa_Rica").toFormat("yyyy-MM-dd"),
       });
       console.log("ID de factura generada:", nuevaFactura.id);
-
+      const idFactura = nuevaFactura.id;
       // 7. Creación de detalles
       const detalles = await Promise.all(
         productos.map(async (prod) => {
           return await DetalleFactura.create({
-            factura_id: nuevaFactura.id,
-            producto_id: prod.id,
+            id_factura: idFactura,  
+            id_producto: prod.id,
             talla_id: prod.tallaId,
             nombre_producto: prod.nombre,
             precio_unitario: prod.precio,
             cantidad: prod.quantity,
-            total: prod.precio * prod.quantity,
+            subtotal: prod.precio * prod.quantity,
           });
         })
       );
@@ -119,6 +120,45 @@ const FacturaController = {
       });
     }
   },
+  async verFacturaPorId(req, res) {
+    const facturaId = req.params.id;
+    const userId = req.user.id; // Suponiendo que tienes el ID del usuario en el token JWT
+
+    try {
+        // Obtener la factura por ID, incluyendo los detalles de los productos relacionados
+        const factura = await Factura.findByPk(facturaId, {
+            include: [
+                {
+                    model: DetalleFactura, // Relación con DetalleFactura
+                    as: 'detalles', // Suponiendo que 'detalles' es el alias
+                    include: [
+                        {
+                            model: Producto, // Relación con Producto
+                            as: 'producto', // Suponiendo que 'producto' es el alias
+                            attributes: ['nombre'] // Solo recuperar el nombre del producto
+                        }
+                    ]
+                }
+            ]
+        });
+
+        // Verificar si la factura existe
+        if (!factura) {
+            return res.status(404).json({ message: "Factura no encontrada" });
+        }
+
+        // Verifica que la factura pertenezca al usuario autenticado
+        if (factura.userId !== userId) {
+            return res.status(403).json({ message: "No tienes permiso para acceder a esta factura" });
+        }
+
+        // Responder con la factura y sus detalles
+        res.status(200).json(factura);
+    } catch (error) {
+        console.error("Error al obtener factura:", error);
+        res.status(500).json({ message: "Error al obtener factura", error });
+    }
+},
 
   async getFacturasUsuario(req, res) {
     try {
@@ -148,20 +188,17 @@ const FacturaController = {
       const { id } = req.params;
       const factura = await Factura.findByPk(id);
       const detalles = await DetalleFactura.findAll({ where: { id_factura: id } });
-
+  
       if (!factura) {
         return res.status(404).json({ message: "Factura no encontrada" });
       }
-
-      const doc = new PDFDocument();
+  
+      const doc = new PDFDocument({ margin: 50 });
       res.setHeader("Content-Type", "application/pdf");
-      res.setHeader("Content-Disposition", `attachment; filename=factura_${id}.pdf`);
+      res.setHeader("Content-Disposition", `attachment; filename=factura_${factura.codigo_factura}.pdf`);
       doc.pipe(res);
-
-      doc.fontSize(20).text("Factura MrWolf", { align: "center" });
-      doc.moveDown();
-
-      // 👉 Formato CR para la fecha en PDF
+  
+      // 👉 Fecha en formato CR
       const fecha = new Date(factura.fecha_emision);
       const formatoCR = new Intl.DateTimeFormat("es-CR", {
         day: "2-digit",
@@ -173,29 +210,45 @@ const FacturaController = {
         hour12: false,
         timeZone: "America/Costa_Rica",
       }).format(fecha);
-
+  
+      // 🧾 ENCABEZADO
+      doc.fontSize(18).text("Factura Electrónica - Mr. Wolf", { align: "center" });
+      doc.moveDown(0.5);
+      doc.fontSize(10).text(`Fecha de emisión: ${formatoCR}`, { align: "center" });
+      doc.fontSize(10).text(`Facebook: Mr.Wolf    Instagram: @mrwolf.cr`, { align: "center" });
+      doc.fontSize(10).text(`Tel: 2101-9480 / 8557-4555`, { align: "center" });
+      doc.moveDown();
+  
+      // 🧍 DATOS DEL CLIENTE
       doc.fontSize(12).text(`Cliente: ${factura.nombre_completo}`);
       doc.text(`Email: ${factura.email_usuario}`);
       doc.text(`Dirección: ${factura.direccion_envio}`);
-      doc.text(`Fecha de emisión: ${formatoCR}`);
+      doc.text(`Teléfono: ${factura.telefono}`);
       doc.moveDown();
-
-      doc.text("Detalles de la factura:");
-      detalles.forEach((d, index) => {
-        doc.text(`${index + 1}. ${d.nombre_producto} - Cantidad: ${d.cantidad} - ₡${d.precio_unitario}`);
+  
+      // 🛍️ DETALLES DE LA FACTURA
+      doc.fontSize(12).text("Detalles de la factura:", { underline: true });
+      doc.moveDown(0.5);
+      doc.text("Producto                      Cantidad     Precio     Subtotal");
+  
+      detalles.forEach((d) => {
+        const subtotal = d.cantidad * d.precio_unitario;
+        const linea = `${d.nombre_producto.padEnd(30)} ${String(d.cantidad).padEnd(10)} ₡${d.precio_unitario.toLocaleString("es-CR")}    ₡${subtotal.toLocaleString("es-CR")}`;
+        doc.text(linea);
       });
-
+  
+      // 💰 RESUMEN
       doc.moveDown();
-      doc.text(`Subtotal: ₡${factura.sub_total}`);
-      doc.text(`Envío: ₡${factura.precio_envio}`);
-      doc.text(`Total: ₡${factura.total}`);
-
+      doc.text(`Subtotal: ₡${factura.sub_total.toLocaleString("es-CR")}`);
+      doc.text(`Envío: ₡${factura.precio_envio.toLocaleString("es-CR")}`);
+      doc.text(`Total: ₡${factura.total.toLocaleString("es-CR")}`);
+  
       doc.end();
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Error al generar el PDF" });
     }
-  },
+  }  
 };
 
 export default FacturaController;

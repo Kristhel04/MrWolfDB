@@ -17,15 +17,19 @@ Imagen.belongsTo(Producto, { foreignKey: "id_producto", as: 'producto' });
 // Relación Producto - Talla (N:M)
 Producto.belongsToMany(Talla, { through: ProductoTalla, foreignKey: 'id_producto', as: 'tallas' });
 Talla.belongsToMany(Producto, { through: ProductoTalla, foreignKey: 'id_talla', as: 'productos' });
- //Relaciones Factura - detalle
- Factura.hasMany(DetalleFactura, { foreignKey: 'id_factura', as: 'detalles' });
- DetalleFactura.belongsTo(Factura, { foreignKey: 'id_factura', as: 'factura' });
- //Factura - Usuario 
- Usuario.hasMany(Factura, { foreignKey: 'cedula' });
- Factura.belongsTo(Usuario, { foreignKey: 'cedula' });
- //DetalleFactura - producto
- Producto.hasMany(DetalleFactura, { foreignKey: 'id_producto' });
-DetalleFactura.belongsTo(Producto, { foreignKey: 'id_producto' });
+
+ /// Relación Factura - DetalleFactura (1:N)
+Factura.hasMany(DetalleFactura, { foreignKey: 'id_factura', as: 'detalles'});
+DetalleFactura.belongsTo(Factura, { foreignKey: 'id_factura', as: 'factura' });
+
+// Relación Factura - Usuario (N:1)
+Usuario.hasMany(Factura, { foreignKey: 'cedula', sourceKey: 'cedula',as: 'facturas'});
+Factura.belongsTo(Usuario, { foreignKey: 'cedula', targetKey: 'cedula', as: 'usuario'});
+
+// Relación DetalleFactura - Producto (N:1)
+Producto.hasMany(DetalleFactura, { foreignKey: 'id_producto', as: 'detallesFactura' });
+DetalleFactura.belongsTo(Producto, { foreignKey: 'id_producto', as: 'producto' });
+
 
 // Mensaje de confirmación
 export default function ConfRelaciones() {
