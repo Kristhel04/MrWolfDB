@@ -5,7 +5,7 @@ class Factura extends Model {}
 
 Factura.init({
   id: {
-    type: DataTypes.BIGINT,
+    type: DataTypes.INTEGER,
     autoIncrement: true,
     primaryKey: true
   },
@@ -14,17 +14,20 @@ Factura.init({
     unique: true,
     allowNull: false
   },
-  cedula_usuario: {
+  cedula: {
     type: DataTypes.STRING,
     allowNull: false
   },
-  nombre_usuario: {
+  nombre_completo: {
     type: DataTypes.STRING
   },
   email_usuario: {
     type: DataTypes.STRING
   },
   direccion_envio: {
+    type: DataTypes.STRING
+  },
+  telefono: {
     type: DataTypes.STRING
   },
   precio_envio: {
@@ -39,12 +42,12 @@ Factura.init({
   },
   nombre_pagina: {
     type: DataTypes.STRING,
-    defaultValue: 'MrWolf'
+    defaultValue: 'Mr.Wolf'
   },
   fecha_emision: {
-    type: DataTypes.DATE,
-    defaultValue: DataTypes.NOW
-  }
+    type: DataTypes.DATE, 
+    allowNull: false,
+  },
 }, {
   sequelize,
   modelName: 'Factura',

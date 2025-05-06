@@ -10,7 +10,7 @@ DetalleFactura.init({
     primaryKey: true
   },
   id_factura: {
-    type: DataTypes.BIGINT,
+    type: DataTypes.INTEGER,
     allowNull: false,
     references: {
       model: 'Factura',
