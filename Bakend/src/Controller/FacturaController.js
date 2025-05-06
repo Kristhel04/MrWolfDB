@@ -6,11 +6,11 @@ import Factura from "../model/FacturaModel.js";
 import DetalleFactura from "../model/DetalleFacturaModel.js";
 import Usuario from "../model/UsuarioModel.js";
 import Producto from "../model/ProductoModel.js";
+import { fileURLToPath } from 'url';
+import { dirname } from 'path';
 
-const pdfDir = path.join("public", "facturasPDF");
-if (!fs.existsSync(pdfDir)) {
-  fs.mkdirSync(pdfDir, { recursive: true });
-}
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 const generarCodigoFactura = () => {
   const fechaBase36 = Date.now().toString(36);
@@ -194,28 +194,33 @@ const FacturaController = {
       }
   
       const doc = new PDFDocument({ margin: 50 });
+      const fontPath = path.join(__dirname, "../../public/fonts/DejaVuSans.ttf");
+      doc.registerFont("custom", fontPath);
+      doc.font("custom");
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `attachment; filename=factura_${factura.codigo_factura}.pdf`);
       doc.pipe(res);
   
-      // 👉 Fecha en formato CR
+      // 👉 Formato de fecha solo con día/mes/año
       const fecha = new Date(factura.fecha_emision);
-      const formatoCR = new Intl.DateTimeFormat("es-CR", {
+      const formatoFecha = new Intl.DateTimeFormat("es-CR", {
         day: "2-digit",
         month: "2-digit",
         year: "numeric",
-        hour: "2-digit",
-        minute: "2-digit",
-        second: "2-digit",
-        hour12: false,
         timeZone: "America/Costa_Rica",
       }).format(fecha);
+  
+      // 🖼️ Insertar logo
+      const logoPath = path.join(__dirname, "../../public/Tienda/Logo Circular Mr Wolf-Photoroom.png"); // ajusta esta ruta según tu estructura
+      doc.image(logoPath, { fit: [100, 100], align: "center" });
+      doc.moveDown(1);
   
       // 🧾 ENCABEZADO
       doc.fontSize(18).text("Factura Electrónica - Mr. Wolf", { align: "center" });
       doc.moveDown(0.5);
-      doc.fontSize(10).text(`Fecha de emisión: ${formatoCR}`, { align: "center" });
-      doc.fontSize(10).text(`Facebook: Mr.Wolf    Instagram: @mrwolf.cr`, { align: "center" });
+      doc.fontSize(10).text(`Fecha de emisión: ${formatoFecha}`, { align: "center" });
+      doc.fontSize(10).text(`Facebook: Mr.Wolf`, { align: "center" });
+      doc.fontSize(10).text(`Instagram: @mrwolf.cr`, { align: "center" });
       doc.fontSize(10).text(`Tel: 2101-9480 / 8557-4555`, { align: "center" });
       doc.moveDown();
   
@@ -229,11 +234,11 @@ const FacturaController = {
       // 🛍️ DETALLES DE LA FACTURA
       doc.fontSize(12).text("Detalles de la factura:", { underline: true });
       doc.moveDown(0.5);
-      doc.text("Producto                      Cantidad     Precio     Subtotal");
+      doc.text("Producto                      Cantidad     Precio unitario     Subtotal");
   
       detalles.forEach((d) => {
         const subtotal = d.cantidad * d.precio_unitario;
-        const linea = `${d.nombre_producto.padEnd(30)} ${String(d.cantidad).padEnd(10)} ₡${d.precio_unitario.toLocaleString("es-CR")}    ₡${subtotal.toLocaleString("es-CR")}`;
+        const linea = `${d.nombre_producto.padEnd(30)} ${String(d.cantidad).padEnd(10)} ₡${d.precio_unitario.toLocaleString("es-CR").padEnd(18)} ₡${subtotal.toLocaleString("es-CR")}`;
         doc.text(linea);
       });
   
@@ -248,7 +253,7 @@ const FacturaController = {
       console.error(error);
       res.status(500).json({ message: "Error al generar el PDF" });
     }
-  }  
+  }
 };
 
 export default FacturaController;
