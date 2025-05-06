@@ -16,7 +16,7 @@ const TallaController ={
         try {
             await sequelize.sync(); 
 
-            const tallasPredeterminadas = ['XS', 'S', 'M', 'L', 'XL','unitalla'];
+            const tallasPredeterminadas = ['XS', 'S', 'M', 'L', 'XL', 'unitalla', ...Array.from({ length: 11 }, (_, i) => (28 + i).toString())];;
             await Promise.all(
                 tallasPredeterminadas.map(async (talla) => {
                     await Talla.findOrCreate({
