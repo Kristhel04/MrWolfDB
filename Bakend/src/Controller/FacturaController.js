@@ -75,7 +75,7 @@ const FacturaController = {
         precio_envio: precioEnvio,
         total: total,
         nombre_pagina: "Mr.Wolf",
-        fecha_emision: DateTime.now().setZone("America/Costa_Rica").toFormat("yyyy-MM-dd"),
+        fecha_emision: DateTime.now().setZone("America/Costa_Rica").toJSDate(),
       });
       console.log("ID de factura generada:", nuevaFactura.id);
       const idFactura = nuevaFactura.id;
