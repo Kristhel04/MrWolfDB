@@ -4,17 +4,12 @@ import { authenticateToken, authorizeRole } from '../Middleware/JwtAuth.js';
 
 const router = express.Router();
 router.get('/factura/:id', authenticateToken, FacturaController.verFacturaPorId);
-// Crear una nueva factura (usuario autenticado)
 router.post('/crear/Factura', authenticateToken, FacturaController.create);
-
-
-// Obtener facturas del usuario autenticado
-router.get('/usuario', authenticateToken, FacturaController.getFacturasUsuario);
-
-// Obtener todas las facturas (solo para admin)
-router.get('/admin', authenticateToken, authorizeRole(['admin']), FacturaController.getAll);
-
+router.get('/facturas', authenticateToken, FacturaController.getFacturasUsuario);
+router.get('/admin', authenticateToken, authorizeRole(['Administrador']), FacturaController.getAll);
+router.delete('/delete/factura',authenticateToken, authorizeRole(['Administrador']),FacturaController.eliminarFactura)
 // Descargar factura en PDF
 router.get('/pdf/:id',FacturaController.generarFacturaPDF);
+
 
 export default router;

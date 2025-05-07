@@ -163,7 +163,9 @@ const FacturaController = {
   async getFacturasUsuario(req, res) {
     try {
       const usuario = req.user;
-      const facturas = await Factura.findAll({ where: { cedula_usuario: usuario.cedula } });
+      const facturas = await Factura.findAll({
+         where: { cedula: usuario.cedula }, 
+         order: [['fecha_emision', 'DESC']], });
       res.status(200).json(facturas);
     } catch (error) {
       res.status(500).json({ message: "Error al obtener facturas del usuario", error });
@@ -172,11 +174,10 @@ const FacturaController = {
 
   async getAll(req, res) {
     try {
-      if (req.user.rol !== "admin") {
+      if (req.user.rol !== "Administrador") {
         return res.status(403).json({ message: "No autorizado" });
       }
-
-      const facturas = await Factura.findAll();
+      const facturas = await Factura.findAll({ order: [['fecha_emision', 'DESC']]});
       res.status(200).json(facturas);
     } catch (error) {
       res.status(500).json({ message: "Error al obtener todas las facturas", error });
@@ -252,6 +253,27 @@ const FacturaController = {
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Error al generar el PDF" });
+    }
+  },
+  async eliminarFactura (req, res) {
+    try {
+      if (req.user.rol !== "Administrador") {
+        return res.status(403).json({ message: "No autorizado" });
+      }
+  
+      const { id } = req.params;
+      const factura = await Factura.findByPk(id);
+      if (!factura) {
+        return res.status(404).json({ message: "Factura no encontrada" });
+      }
+  
+      await DetalleFactura.destroy({ where: { id_factura: id } });
+      await Factura.destroy({ where: { id } });
+  
+      return res.status(200).json({ message: "Factura y sus detalles eliminados correctamente" });
+    } catch (error) {
+      console.error("Error al eliminar la factura:", error);
+      return res.status(500).json({ message: "Error interno al eliminar la factura" });
     }
   }
 };
