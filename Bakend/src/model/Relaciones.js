@@ -3,6 +3,9 @@ import Categoria from './CategoriaModel.js';
 import Imagen from './ImagenModel.js';
 import Talla from './TallaModel.js';
 import ProductoTalla from './ProductoTallaModel.js';
+import Factura from './FacturaModel.js';
+import DetalleFactura from './DetalleFacturaModel.js';
+import Usuario from './UsuarioModel.js';  
 
 
 // Relación Categoría - Producto (1:N)
