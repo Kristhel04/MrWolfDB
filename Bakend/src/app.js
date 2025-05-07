@@ -8,11 +8,13 @@ import TallaR from './router/Talla.routes.js';
 import sequelize from './baseDatos/connection.js';
 import TallaController from './Controller/TallaController.js'
 import resenasR from './router/Resena.routes.js';
+import facturaR from './router/Factura.route.js';
 import ConfRelaciones from './model/Relaciones.js';
 import sessionMiddleware  from './Middleware/sessionConfig.js'
 import 'dotenv/config';
 import cors from 'cors';
 import path from 'path';
+import Factura from './model/FacturaModel.js';
 
 const app = express();
 //console.log("Cargando middleware de sesión..."); // Agrega esto para depuración
@@ -59,6 +61,8 @@ app.use('/api/v1', TallaR);
 app.use('/api/v1', carritosR);
 app.use('/api/v1', recuperacionR);
 app.use('/api/v1', resenasR);
+app.use('/api/v1',facturaR);
+
 
 
 
