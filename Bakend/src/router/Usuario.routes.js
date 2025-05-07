@@ -15,7 +15,6 @@ router.delete('/usuarios/:cedula', UsuarioController.deleteUser);
 router.post('/login', UsuarioController.login);
 router.post('/logout', UsuarioController.logout);
 router.post('/refresh-token', UsuarioController.refreshToken);
-
-
+router.get("/perfil", authenticateToken, UsuarioController.getProfile);
 
 export default router;

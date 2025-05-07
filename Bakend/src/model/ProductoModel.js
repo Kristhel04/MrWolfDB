@@ -50,5 +50,5 @@ Producto.init({
     tableName: 'Productos',
     timestamps: false
 });
-
+  
 export default Producto;

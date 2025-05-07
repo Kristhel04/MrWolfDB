@@ -43,8 +43,7 @@ export const addToCarrito = async (req, res) => {
         const existingProductIndex = req.session.cart.findIndex(p => p.id === product.id && p.tallaId === talla.id);
 
         // Seleccionar la imagen del producto (usar la primera imagen si existen)
-        
-        const productImage = product.imagenes && product.imagenes.length > 0 ? product.imagenes[0].nomImagen : 'default.jpg';
+        const productImage = product.imagenes && product.imagenes.length > 0 ? product.imagenes[0].nomImagen : 'OIP.jpeg';
 
         if (existingProductIndex !== -1) {
             const currentQty = req.session.cart[existingProductIndex].quantity;
