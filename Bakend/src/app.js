@@ -7,6 +7,7 @@ import carritosR from './router/Carrito.routes.js';
 import TallaR from './router/Talla.routes.js';
 import sequelize from './baseDatos/connection.js';
 import TallaController from './Controller/TallaController.js'
+import resenasR from './router/Resena.routes.js';
 import ConfRelaciones from './model/Relaciones.js';
 import sessionMiddleware  from './Middleware/sessionConfig.js'
 import 'dotenv/config';
@@ -57,7 +58,7 @@ app.use('/api/v1', categoriasR);
 app.use('/api/v1', TallaR);
 app.use('/api/v1', carritosR);
 app.use('/api/v1', recuperacionR);
-
+app.use('/api/v1', resenasR);
 
 
 
