@@ -45,8 +45,8 @@ Factura.init({
     defaultValue: 'Mr.Wolf'
   },
   fecha_emision: {
-    type: DataTypes.DATE, 
-    allowNull: false,
+   type: DataTypes.DATEONLY,  
+    defaultValue: DataTypes.NOW,
   },
 }, {
   sequelize,

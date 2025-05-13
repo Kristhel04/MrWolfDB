@@ -8,6 +8,7 @@ import Usuario from "../model/UsuarioModel.js";
 import Producto from "../model/ProductoModel.js";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
+import moment from 'moment';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -63,7 +64,7 @@ const FacturaController = {
       const precioEnvio = 3500;
       const total = subTotal + precioEnvio;
 
-      // 6. Creación de la factura
+     const fechaFormateada = moment().format('YYYY-MM-DD'); 
       const nuevaFactura = await Factura.create({
         codigo_factura: generarCodigoFactura(),
         cedula: user.cedula,
@@ -75,7 +76,7 @@ const FacturaController = {
         precio_envio: precioEnvio,
         total: total,
         nombre_pagina: "Mr.Wolf",
-        fecha_emision: DateTime.now().setZone("America/Costa_Rica").toJSDate(),
+        fecha_emision: fechaFormateada,
       });
       console.log("ID de factura generada:", nuevaFactura.id);
       const idFactura = nuevaFactura.id;
