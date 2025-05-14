@@ -169,4 +169,34 @@ export const updateCarrito = async (req, res) => {
         console.error("Error en updateCarrito:", error);
         res.status(500).json({ message: "Error en el servidor", error: error.message });
     }
+    
+};
+export const removeMultipleFromCarrito = (req, res) => {
+    try {
+        const { productos } = req.body;
+
+        if (!Array.isArray(productos) || productos.length === 0) {
+            return res.status(400).json({ message: "Se requiere una lista de productos para eliminar." });
+        }
+
+        if (!req.session || !req.session.cart) {
+            return res.status(400).json({ message: "El carrito está vacío o no existe." });
+        }
+
+        // Filtrar productos que no estén en la lista de productos a eliminar
+        req.session.cart = req.session.cart.filter(cartItem => {
+            return !productos.some(p => p.id === cartItem.id && p.tallaId === cartItem.tallaId);
+        });
+
+        req.session.save(err => {
+            if (err) {
+                console.error("Error guardando la sesión:", err);
+                return res.status(500).json({ message: "Error guardando la sesión" });
+            }
+            res.json({ message: "Productos eliminados del carrito", cart: req.session.cart });
+        });
+    } catch (error) {
+        console.error("Error en removeMultipleFromCarrito:", error);
+        res.status(500).json({ message: "Error en el servidor", error: error.message });
+    }
 };
