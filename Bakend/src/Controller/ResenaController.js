@@ -80,22 +80,134 @@ const ResenaController = {
     }    
   },
   
-  // Eliminar reseña
-    async delete(req, res) {
-      try {
-        const { id } = req.params;
-        const resena = await Resena.findByPk(id);
-  
-        if (!resena) {
-          return res.status(404).json({ message: "Reseña no encontrada" });
-        }
-        await resena.destroy();
-  
-        res.status(200).json({ message: "Reseña eliminada correctamente" });
-      } catch (error) {
-        res.status(500).json({ message: "Error al eliminar la reseña", error });
-      }
+// Editar reseña (solo si es del usuario)
+async update(req, res) {
+  try {
+    const { id } = req.params;
+    const { comentario, calificacion } = req.body;
+    const { cedula, rol } = req.user;
+
+    const resena = await Resena.findByPk(id);
+    if (!resena) {
+      return res.status(404).json({ message: "Reseña no encontrada" });
     }
+
+    if (resena.cedula_usuario !== cedula) {
+      return res.status(403).json({ message: "No tienes permiso para modificar esta reseña" });
+    }
+
+    resena.comentario = comentario || resena.comentario;
+    resena.calificacion = calificacion || resena.calificacion;
+    await resena.save();
+
+    res.status(200).json({ message: "Reseña actualizada correctamente", resena });
+  } catch (error) {
+    res.status(500).json({ message: "Error al actualizar la reseña", error });
+  }
+},
+
+// Eliminar reseña (usuario dueño o admin)
+async delete(req, res) {
+  try {
+    const { id } = req.params;
+    const { cedula, rol } = req.user;
+
+    const resena = await Resena.findByPk(id);
+    if (!resena) {
+      return res.status(404).json({ message: "Reseña no encontrada" });
+    }
+
+   if (rol !== 'Administrador' && resena.cedula_usuario !== cedula){
+      return res.status(403).json({ message: "No tienes permiso para eliminar esta reseña" });
+    }
+
+    await resena.destroy();
+    res.status(200).json({ message: "Reseña eliminada correctamente" });
+  } catch (error) {
+    res.status(500).json({ message: "Error al eliminar la reseña", error });
+  }
+},
+
+// Ocultar reseña (solo admin)
+async ocultar(req, res) {
+  try {
+    const { id } = req.params;
+    const { rol } = req.user;
+
+    if (rol !== 'Administrador') {
+      return res.status(403).json({ message: "Solo los administradores pueden ocultar reseñas" });
+    }
+
+    const resena = await Resena.findByPk(id);
+    if (!resena) {
+      return res.status(404).json({ message: "Reseña no encontrada" });
+    }
+
+    resena.visible = false;
+    await resena.save();
+
+    res.status(200).json({ message: "Reseña ocultada correctamente", resena });
+  } catch (error) {
+    res.status(500).json({ message: "Error al ocultar la reseña", error });
+  }
+},
+
+// Obtener puntuación promedio por producto
+async getPuntuacionPromedio(req, res) {
+  try {
+    const { id } = req.params;
+
+    const reseñas = await Resena.findAll({
+      where: {
+        id_producto: id,
+        visible: true
+      }
+    });
+
+    if (!reseñas.length) {
+      return res.status(404).json({ message: "No hay reseñas para este producto" });
+    }
+
+    const total = reseñas.reduce((sum, r) => sum + r.calificacion, 0);
+    const promedio = total / reseñas.length;
+
+    res.status(200).json({
+      id_producto: id,
+      promedio: promedio.toFixed(2),
+      cantidad: reseñas.length
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error al calcular la puntuación", error });
+  }
+},
+// En ResenaController.js
+async toggleVisible(req, res) {
+  try {
+    const { id } = req.params;
+    const { rol } = req.user;
+
+    if (rol !== 'Administrador') {
+      return res.status(403).json({ message: "Solo los administradores pueden cambiar visibilidad" });
+    }
+
+    const resena = await Resena.findByPk(id);
+    if (!resena) {
+      return res.status(404).json({ message: "Reseña no encontrada" });
+    }
+
+    resena.visible = !resena.visible;
+    await resena.save();
+
+    res.status(200).json({
+      message: `Reseña marcada como ${resena.visible ? "visible" : "oculta"}`,
+      resena
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Error al cambiar visibilidad", error });
+  }
+}
+
+
 };
 
 export default ResenaController;

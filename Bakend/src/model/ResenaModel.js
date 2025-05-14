@@ -26,13 +26,18 @@ const Resena = sequelize.define("Resena", {
     type: DataTypes.TEXT,
   },
   fecha: {
-    type: DataTypes.DATEONLY,  // Almacena solo la fecha
-    defaultValue: DataTypes.NOW,  // Funciona bien con DATEONLY
+    type: DataTypes.DATEONLY,  
+    defaultValue: DataTypes.NOW,  
   },
+  visible: {
+  type: DataTypes.BOOLEAN,
+  defaultValue: true
+}
 }, {
   tableName: 'Resenas',
   timestamps: false
-});
+}
+);
 
 // Relaciones con alias
 Resena.belongsTo(Usuario, {
