@@ -16,5 +16,6 @@ router.post('/login', UsuarioController.login);
 router.post('/logout', UsuarioController.logout);
 router.post('/refresh-token', UsuarioController.refreshToken);
 router.get("/perfil", authenticateToken, UsuarioController.getProfile);
+router.put('/perfil', authenticateToken, UsuarioController.updateOwnProfile);
 
 export default router;
