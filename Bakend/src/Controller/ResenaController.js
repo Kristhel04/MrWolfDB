@@ -128,30 +128,6 @@ async delete(req, res) {
   }
 },
 
-// Ocultar reseña (solo admin)
-async ocultar(req, res) {
-  try {
-    const { id } = req.params;
-    const { rol } = req.user;
-
-    if (rol !== 'Administrador') {
-      return res.status(403).json({ message: "Solo los administradores pueden ocultar reseñas" });
-    }
-
-    const resena = await Resena.findByPk(id);
-    if (!resena) {
-      return res.status(404).json({ message: "Reseña no encontrada" });
-    }
-
-    resena.visible = false;
-    await resena.save();
-
-    res.status(200).json({ message: "Reseña ocultada correctamente", resena });
-  } catch (error) {
-    res.status(500).json({ message: "Error al ocultar la reseña", error });
-  }
-},
-
 // Obtener puntuación promedio por producto
 async getPuntuacionPromedio(req, res) {
   try {
@@ -159,8 +135,7 @@ async getPuntuacionPromedio(req, res) {
 
     const reseñas = await Resena.findAll({
       where: {
-        id_producto: id,
-        visible: true
+        id_producto: id
       }
     });
 
@@ -179,34 +154,7 @@ async getPuntuacionPromedio(req, res) {
   } catch (error) {
     res.status(500).json({ message: "Error al calcular la puntuación", error });
   }
-},
-// En ResenaController.js
-async toggleVisible(req, res) {
-  try {
-    const { id } = req.params;
-    const { rol } = req.user;
-
-    if (rol !== 'Administrador') {
-      return res.status(403).json({ message: "Solo los administradores pueden cambiar visibilidad" });
-    }
-
-    const resena = await Resena.findByPk(id);
-    if (!resena) {
-      return res.status(404).json({ message: "Reseña no encontrada" });
-    }
-
-    resena.visible = !resena.visible;
-    await resena.save();
-
-    res.status(200).json({
-      message: `Reseña marcada como ${resena.visible ? "visible" : "oculta"}`,
-      resena
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Error al cambiar visibilidad", error });
-  }
 }
-
 
 };
 
