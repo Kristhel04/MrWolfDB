@@ -69,7 +69,8 @@ export const addToCarrito = async (req, res) => {
                 imagen: productImage, // Asignar la imagen correcta
                 tallaId: talla.id,
                 tallaNombre: talla.nombre,
-                quantity: qty
+                quantity: qty,
+                estado: product.estado
             });
         }
 
@@ -88,8 +89,7 @@ export const addToCarrito = async (req, res) => {
 };
 
 
-
-export const getCarrito = (req, res) => {
+export const getCarrito = async (req, res) => {
     console.log("Estado actual de la sesión en getCarrito:", req.session);
 
     try {
@@ -99,14 +99,29 @@ export const getCarrito = (req, res) => {
 
         req.session.cart = req.session.cart || [];
 
-        console.log("Carrito en getCarrito después de inicialización:", req.session.cart);
+        const updatedCart = [];
 
-        res.json({ cart: req.session.cart });
+        for (const item of req.session.cart) {
+    
+            const productoDB = await Producto.findByPk(item.id);
+
+            // Si el producto ya no existe, lo marcamos como no disponible
+            const estadoActual = productoDB ? productoDB.estado : 'No disponible';
+
+            updatedCart.push({
+                ...item,
+                estado: estadoActual  
+            });
+        }
+        console.log("Carrito actualizado con estado real:", updatedCart);
+
+        res.json({ cart: updatedCart });
     } catch (error) {
         console.error("Error en getCarrito:", error);
         res.status(500).json({ message: "Error en el servidor", error: error.message });
     }
 };
+
 
 
 
