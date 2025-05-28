@@ -63,6 +63,7 @@ class UsuarioController {
   }
 
   async updateUser(req, res) {
+    
     try {
       let { cedula } = req.params;
       cedula = cedula.trim();
@@ -107,6 +108,49 @@ class UsuarioController {
       res
         .status(500)
         .json({ message: "Error al actualizar el usuario", error });
+    }
+  }
+
+  async updateOwnProfile(req, res) {
+    try {
+      const { cedula } = req.user;
+
+      const {
+        nombre_usuario,
+        nombre_completo,
+        email,
+        contraseña,
+        telefono,
+        direccion_envio,
+        email_facturacion,
+        imagen,
+      } = req.body;
+
+      const usuario = await Usuario.findByPk(cedula);
+      if (!usuario) {
+        return res.status(404).json({ message: "Usuario no encontrado" });
+      }
+
+      let nuevaContraseña;
+      if (contraseña) {
+        const salt = await bcrypt.genSalt(10);
+        nuevaContraseña = await bcrypt.hash(contraseña, salt);
+      }
+
+      await usuario.update({
+        nombre_usuario,
+        nombre_completo,
+        email,
+        contraseña: nuevaContraseña || usuario.contraseña,
+        telefono,
+        direccion_envio,
+        email_facturacion,
+        imagen,
+      });
+
+      res.json({ message: "Perfil actualizado", usuario });
+    } catch (error) {
+      res.status(500).json({ message: "Error al actualizar el perfil", error });
     }
   }
 
@@ -223,33 +267,37 @@ class UsuarioController {
     }
   }
 
-
   async restablecerContrasena(req, res) {
     const { email, codigo, nuevaContrasena } = req.body;
-  
+
     try {
       const registro = await CodigoRecuperacion.findOne({
         where: { email, codigo, expiracion: { [Op.gt]: new Date() } },
       });
-  
+
       if (!registro) {
         return res.status(400).json({ message: "Código inválido o expirado" });
       }
-  
+
       // Llamada directa al método con parámetros
-      await UsuarioController.actualizarContrasenaDirecto(email, nuevaContrasena);
-      
+      await UsuarioController.actualizarContrasenaDirecto(
+        email,
+        nuevaContrasena
+      );
+
       await registro.destroy();
       res.json({ message: "Contraseña actualizada correctamente" });
     } catch (error) {
       console.error("Error al restablecer contraseña:", error);
-      res.status(500).json({ message: "Error al restablecer contraseña", error });
+      res
+        .status(500)
+        .json({ message: "Error al restablecer contraseña", error });
     }
   }
 
   async getProfile(req, res) {
     try {
-      const { cedula } = req.user; // cedula viene del token decodificado por el middleware
+      const { cedula } = req.user;
       const usuario = await Usuario.findByPk(cedula, {
         attributes: [
           "cedula",
@@ -273,7 +321,6 @@ class UsuarioController {
       res.status(500).json({ message: "Error al obtener el perfil", error });
     }
   }
-
 }
 
 export default new UsuarioController();
