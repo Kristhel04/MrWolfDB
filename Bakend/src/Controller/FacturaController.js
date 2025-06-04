@@ -64,7 +64,8 @@ const FacturaController = {
       const precioEnvio = 3500;
       const total = subTotal + precioEnvio;
 
-     const fechaFormateada = moment().format('YYYY-MM-DD'); 
+
+      const fechaFormateada = moment.utc().format('YYYY-MM-DD');
       const nuevaFactura = await Factura.create({
         codigo_factura: generarCodigoFactura(),
         cedula: user.cedula,
@@ -76,7 +77,7 @@ const FacturaController = {
         precio_envio: precioEnvio,
         total: total,
         nombre_pagina: "Mr.Wolf",
-        fecha_emision: fechaFormateada,
+       fecha_emision: fechaFormateada, 
       });
       console.log("ID de factura generada:", nuevaFactura.id);
       const idFactura = nuevaFactura.id;
@@ -103,7 +104,7 @@ const FacturaController = {
           id: nuevaFactura.id,
           codigo: nuevaFactura.codigo_factura,
           total: nuevaFactura.total,
-          fecha: nuevaFactura.fecha_emision
+          fecha: moment.utc(nuevaFactura.fecha_emision).format('DD/MM/YYYY')
         },
         productos: detalles.map(d => ({
           nombre: d.nombre_producto,
@@ -202,16 +203,9 @@ const FacturaController = {
       res.setHeader("Content-Type", "application/pdf");
       res.setHeader("Content-Disposition", `attachment; filename=factura_${factura.codigo_factura}.pdf`);
       doc.pipe(res);
-  
-      // 👉 Formato de fecha solo con día/mes/año
-      const fecha = new Date(factura.fecha_emision);
-      const formatoFecha = new Intl.DateTimeFormat("es-CR", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-        timeZone: "America/Costa_Rica",
-      }).format(fecha);
-  
+
+      const fechaFormateada = moment().format('DD/MM/YYYY');
+
       // 🖼️ Insertar logo
       const logoPath = path.join(__dirname, "../../public/Tienda/Logo Circular Mr Wolf-Photoroom.png"); // ajusta esta ruta según tu estructura
       doc.image(logoPath, { fit: [100, 100], align: "center" });
@@ -220,7 +214,7 @@ const FacturaController = {
       // 🧾 ENCABEZADO
       doc.fontSize(18).text("Factura Electrónica - Mr. Wolf", { align: "center" });
       doc.moveDown(0.5);
-      doc.fontSize(10).text(`Fecha de emisión: ${formatoFecha}`, { align: "center" });
+      doc.fontSize(10).text(`Fecha de emisión: ${fechaFormateada}`, { align: "center" });
       doc.fontSize(10).text(`Facebook: Mr.Wolf`, { align: "center" });
       doc.fontSize(10).text(`Instagram: @mrwolf.cr`, { align: "center" });
       doc.fontSize(10).text(`Tel: 2101-9480 / 8557-4555`, { align: "center" });
