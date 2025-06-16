@@ -23,13 +23,6 @@ jobs:
         with:
           node-version: '22.x'
      
-      - name: Create .env file for tests
-        run: |
-          echo "NODE_ENV=test" >> .env
-          echo "DB_DIALECT=sqlite" >> .env
-          echo "DB_STORAGE=:memory:" >> .env
-          echo "JWT_SECRET=testsecret" >> .env     
-
       - name: npm install, build, and test
         run: |
           npm install
