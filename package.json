@@ -8,7 +8,8 @@
     "start": "cross-env NODE_ENV=production node src/index.js",
     "test": "cross-env NODE_ENV=test mocha src/test/**/*.test.js",
     "test:ci": "cross-env NODE_ENV=test mocha src/test/**/*.test.js --exit",
-    "test:watch": "cross-env NODE_ENV=test mocha src/test/**/*.test.js --watch"
+    "test:watch": "cross-env NODE_ENV=test mocha src/test/**/*.test.js --watch",
+    "azure-start": "node src/index.js"
   },
   "keywords": [],
   "author": "",
