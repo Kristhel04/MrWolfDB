@@ -36,7 +36,7 @@ jobs:
           name: node-app
           path: ./Bakend
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: windows-latest
     needs: build
     environment:
       name: 'Production'
