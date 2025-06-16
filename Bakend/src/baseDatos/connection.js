@@ -24,17 +24,18 @@ const config = {
       trustServerCertificate: true,
     },
   },
-  production: {
+  production: {                              // 3) Producción: Azure u otro entorno
     dialect: "mssql",
-    host: process.env.DB_HOST,
+    host:     process.env.DB_HOST,
     username: process.env.DB_USER,
     password: process.env.DB_PASSWORD,
     database: process.env.DB_NAME,
-    port: process.env.DB_PORT,
+    port:     Number(process.env.DB_PORT),
     dialectOptions: {
-      encrypt: true, // En producción debería ser true
-      trustServerCertificate: false, // En producción debería ser false
+      encrypt: true,                        // obligatorio en Azure SQL
+      trustServerCertificate: false,
     },
+    logging: false,
   },
 };
 
@@ -42,14 +43,14 @@ const sequelize = new Sequelize(config[env]);
 
 // Solo ejecutar estas pruebas de conexión en entornos que no sean test
 if (env !== "test") {
-  const testConnection = async () => {
+  (async () => {
     try {
       await sequelize.authenticate();
-      console.log("Conexión a la base de datos establecida correctamente.");
-    } catch (error) {
-      console.error("No se pudo conectar a la base de datos:", error);
+      console.log(`✔ Conectado (${env}) a ${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`);
+    } catch (err) {
+      console.error("✖ No se pudo conectar a la base de datos:", err);
     }
-  };
+  })();
 
   const testQuery = async () => {
     try {
