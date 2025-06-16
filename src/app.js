@@ -5,53 +5,27 @@ import productosR from './router/Producto.routes.js';
 import categoriasR from './router/Categoria.routes.js';
 import carritosR from './router/Carrito.routes.js';
 import TallaR from './router/Talla.routes.js';
-import sequelize from './baseDatos/connection.js';
-import TallaController from './Controller/TallaController.js'
 import resenasR from './router/Resena.routes.js';
 import facturaR from './router/Factura.route.js';
-import ConfRelaciones from './model/Relaciones.js';
-import sessionMiddleware  from './Middleware/sessionConfig.js'
-import 'dotenv/config';
+import sessionMiddleware from './Middleware/sessionConfig.js';
 import cors from 'cors';
 import path from 'path';
-import Factura from './model/FacturaModel.js';
 
 const app = express();
-//console.log("Cargando middleware de sesión..."); // Agrega esto para depuración
+
+// Configuración de middleware
 app.use(sessionMiddleware);
-app.use((req, res, next) => {
-    console.log("Sesión actual:", req.session);
-    console.log("ID de sesión:", req.sessionID);
-    next();
-});
-
-
 app.use(cors({
-    origin: "http://localhost:5173", // ⚡ Cambia esto según el puerto de tu frontend
-    credentials: true // 💡 Permite que se envíen cookies y sesiones en la petición
+    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    credentials: true
 }));
 app.use(express.json());
 
-app.get("/test-session", (req, res) => {
-    req.session.test = "Funciona!";
-    res.send("Sesión guardada en el servidor.");
-});
-
-app.get("/check-session", (req, res) => {
-    res.json({ session: req.session });
-});
-
-app.get("/api/v1/cart/debug", (req, res) => {
-    res.json({ cart: req.session.cart || "Carrito vacío en sesión" });
-});
-
-
+// Configuración de archivos estáticos
 const __dirname = path.resolve();
-const staticFilesPath = path.join(__dirname, 'public'); // Ruta base para archivos estáticos
-
-// Configuración de rutas estáticas
-app.use("/imagenes", express.static(path.join(staticFilesPath, "ImgCategorias")));
-app.use('/ImgProductos', express.static(path.join(staticFilesPath, 'ImgProductos')));
+app.use("/public", express.static(path.join(__dirname, "public")));
+app.use("/imagenes", express.static(path.join(__dirname, "public/ImgCategorias")));
+app.use('/ImgProductos', express.static(path.join(__dirname, 'public/ImgProductos')));
 
 // Rutas de la API
 app.use('/api/v1', usuariosR);
@@ -61,13 +35,24 @@ app.use('/api/v1', TallaR);
 app.use('/api/v1', carritosR);
 app.use('/api/v1', recuperacionR);
 app.use('/api/v1', resenasR);
-app.use('/api/v1',facturaR);
+app.use('/api/v1', facturaR);
 
+// Ruta raíz y manejo de robots.txt
+app.get('/', (req, res) => {
+    res.send('Backend-MrWolf está funcionando');
+});
 
+app.get('/robots.txt', (req, res) => {
+    res.type('text/plain');
+    res.send('User-agent: *\nDisallow: /');
+});
 
+// Middleware para manejar errores 404
+app.use((req, res, next) => {
+    if (req.ip.startsWith('169.254.')) {
+        return res.status(200).end();
+    }
+    res.status(404).json({ error: 'Ruta no encontrada' });
+});
 
-await sequelize.sync({ force: false });
-ConfRelaciones();
-
-
-export default app;
+export default app;
