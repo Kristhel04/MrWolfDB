@@ -19,14 +19,14 @@ jobs:
           node-version: 20.x
 
       - name: Install dependencies
-        working-directory: ./Bakend 
+        working-directory: .
         run: |
           npm ci  # Usa npm ci en lugar de install para builds de CI
         env:
           JWT_SECRET: "secret_for_testing"
 
       - name: Run tests
-        working-directory: ./Bakend
+        working-directory: .
         run: npm test
         env:
           JWT_SECRET: "secret_for_testing"
