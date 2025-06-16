@@ -10,3 +10,5 @@ coverage/
 .vscode/
 *.log
 *.local
+src/test/
+.github/workflows/test.yml
