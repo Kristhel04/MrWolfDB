@@ -16,7 +16,7 @@ const app = express();
 // Configuración de middleware
 app.use(sessionMiddleware);
 app.use(cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
+    origin: "https://thankful-coast-087ff680f.6.azurestaticapps.net",
     credentials: true
 }));
 app.use(express.json());
