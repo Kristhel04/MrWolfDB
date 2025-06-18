@@ -2,8 +2,10 @@ import session from "express-session";
 import connectRedis from "connect-redis";
 import Redis from "ioredis";
 
-// Crear un cliente Redis con la URL de entorno
-const redisClient = new Redis(process.env.REDIS_URL);
+// Crear un cliente Redis con la URL de entorno y configuración TLS
+const redisClient = new Redis(process.env.REDIS_URL, {
+  tls: {} // Asegura que la conexión sea segura (SSL/TLS)
+});
 
 // Escuchar eventos de error en Redis
 redisClient.on("error", (err) => {
