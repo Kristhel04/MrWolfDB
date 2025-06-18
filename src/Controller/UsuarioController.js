@@ -201,6 +201,11 @@ class UsuarioController {
 
   async logout(req, res) {
     try {
+      // Limpiar el carrito de la sesión
+      if (req.session) {
+        req.session.cart = []; // Vacía el carrito de la sesión
+      }
+
       // Elimina la cookie del refreshToken
       res.clearCookie("refreshToken");
 
@@ -213,7 +218,7 @@ class UsuarioController {
         }
 
         res.json({
-          message: "Sesión cerrada exitosamente.",
+          message: "Sesión cerrada exitosamente y carrito limpiado.",
         });
       });
     } catch (error) {
