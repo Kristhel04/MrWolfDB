@@ -1,13 +1,11 @@
 import Producto from "../model/ProductoModel.js";
 import Imagen from "../model/ImagenModel.js";
 import Talla from "../model/TallaModel.js";
-import ProductoTalla from "../model/ProductoTallaModel.js";
-import { Sequelize } from "sequelize";
 
 // Función para agregar al carrito
 export const addToCarrito = async (req, res) => {
     try {
-        const { productId, tallaId, quantity = 1, cart = [] } = req.body;
+        const { productId, tallaId, quantity = 1 } = req.body;
 
         if (!productId || !tallaId || isNaN(productId) || isNaN(tallaId)) {
             return res.status(400).json({ message: "Datos inválidos: productId y tallaId son requeridos y deben ser números." });
@@ -18,11 +16,9 @@ export const addToCarrito = async (req, res) => {
             return res.status(400).json({ message: "Cantidad inválida: debe ser un número mayor a 0." });
         }
 
-        // Incluir imágenes en la consulta del producto
+        // Obtener el producto y talla
         const product = await Producto.findByPk(productId, {
-            include: [
-                { model: Imagen, as: "imagenes", attributes: ["nomImagen"] },
-            ],
+            include: [{ model: Imagen, as: "imagenes", attributes: ["nomImagen"] }],
         });
 
         if (!product) {
@@ -34,40 +30,9 @@ export const addToCarrito = async (req, res) => {
             return res.status(404).json({ message: "Talla no encontrada." });
         }
 
-        const existingProductIndex = cart.findIndex(p => p.id === product.id && p.tallaId === talla.id);
-
-        // Seleccionar la imagen del producto
-        const productImage = product.imagenes && product.imagenes.length > 0 ? product.imagenes[0].nomImagen : 'OIP.jpeg';
-
-        if (existingProductIndex !== -1) {
-            const currentQty = cart[existingProductIndex].quantity;
-
-            if (currentQty + qty > 5) {
-                return res.status(400).json({
-                    message: "No puedes agregar más de 5 unidades del mismo producto con la misma talla."
-                });
-            }
-
-            cart[existingProductIndex].quantity += qty;
-        } else {
-            if (qty > 5) {
-                return res.status(400).json({
-                    message: "No puedes agregar más de 5 unidades del mismo producto con la misma talla."
-                });
-            }
-            cart.push({
-                id: product.id,
-                nombre: product.nombre,
-                precio: product.precio,
-                imagen: productImage,
-                tallaId: talla.id,
-                tallaNombre: talla.nombre,
-                quantity: qty,
-                estado: product.estado
-            });
-        }
-
-        res.json({ message: "Producto agregado al carrito", cart });
+        // Aquí ya no es necesario manejar el carrito en la sesión o base de datos
+        // El carrito se maneja completamente en el frontend con localStorage/sessionStorage
+        res.json({ message: "Producto agregado al carrito", cart: req.body.cart || [] });
 
     } catch (error) {
         console.error("Error en addToCarrito:", error);
@@ -75,32 +40,22 @@ export const addToCarrito = async (req, res) => {
     }
 };
 
-export const getCarrito = async (req, res) => {
+// Función para obtener el carrito (con localStorage/sessionStorage)
+export const getCarrito = (req, res) => {
     try {
-        const { cart = [] } = req.body;
-        const updatedCart = [];
-
-        for (const item of cart) {
-            const productoDB = await Producto.findByPk(item.id);
-            const estadoActual = productoDB ? productoDB.estado : 'No disponible';
-
-            updatedCart.push({
-                ...item,
-                estado: estadoActual  
-            });
-        }
-
-        res.json({ cart: updatedCart });
+        const cart = req.body.cart || [];
+        res.json({ cart });
     } catch (error) {
         console.error("Error en getCarrito:", error);
         res.status(500).json({ message: "Error en el servidor", error: error.message });
     }
 };
 
+// Función para eliminar del carrito
 export const removeFromCarrito = (req, res) => {
     try {
         const { productId, tallaId, cart = [] } = req.body;
-        
+
         if (!cart || cart.length === 0) {
             return res.status(400).json({ message: 'El carrito está vacío' });
         }
@@ -118,7 +73,8 @@ export const removeFromCarrito = (req, res) => {
     }
 };
 
-export const updateCarrito = async (req, res) => {
+// Función para actualizar cantidad en el carrito
+export const updateCarrito = (req, res) => {
     try {
         const { productId, tallaId, quantity, cart = [] } = req.body;
 
@@ -154,6 +110,7 @@ export const updateCarrito = async (req, res) => {
     }
 };
 
+// Función para eliminar múltiples productos del carrito
 export const removeMultipleFromCarrito = (req, res) => {
     try {
         const { productos, cart = [] } = req.body;
