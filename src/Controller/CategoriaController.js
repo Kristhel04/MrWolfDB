@@ -45,7 +45,7 @@ const CategoriaController = {
             const categorias = await Categoria.findAll();
             const categoriasConImagenURL = categorias.map(categoria => ({
                 ...categoria.dataValues,
-                imagen: categoria.imagen ? `http://localhost:3000/imagenes/${categoria.imagen}` : null
+                imagen: categoria.imagen ? `https://backend-mrwolf-fyh3cgdpgucjaebs.eastus-01.azurewebsites.net/imagenes/${categoria.imagen}` : null
             }));
     
             res.status(200).json(categoriasConImagenURL);
@@ -65,7 +65,7 @@ const CategoriaController = {
           });
           const categoriasConImagenURL = categorias.map(categoria => ({
               ...categoria.dataValues,
-              imagen: categoria.imagen ? `http://localhost:3000/imagenes/${categoria.imagen}` : null
+              imagen: categoria.imagen ? `https://backend-mrwolf-fyh3cgdpgucjaebs.eastus-01.azurewebsites.net/imagenes/${categoria.imagen}` : null
           }));
   
           res.status(200).json(categoriasConImagenURL);
@@ -78,7 +78,7 @@ const CategoriaController = {
             const { id } = req.params;
             const categoria = await Categoria.findByPk(id);
             if (categoria) {
-                categoria.imagen = categoria.imagen ? `http://localhost:3000/imagenes/${categoria.imagen}` : null;
+                categoria.imagen = categoria.imagen ? `https://backend-mrwolf-fyh3cgdpgucjaebs.eastus-01.azurewebsites.net/imagenes/${categoria.imagen}` : null;
                 res.status(200).json(categoria);
             } else {
                 res.status(404).json({ message: "Categoría no encontrada" });
@@ -152,7 +152,7 @@ const CategoriaController = {
             // Devolver la categoría actualizada con la URL completa
             res.status(200).json({
                 ...categoria.dataValues,
-                imagen: nuevaImagen ? `http://localhost:3000/imagenes/${nuevaImagen}` : categoria.imagen ? `http://localhost:3000/imagenes/${categoria.imagen}` : null,
+                imagen: nuevaImagen ? `https://backend-mrwolf-fyh3cgdpgucjaebs.eastus-01.azurewebsites.net/imagenes/${nuevaImagen}` : categoria.imagen ? `https://backend-mrwolf-fyh3cgdpgucjaebs.eastus-01.azurewebsites.net/imagenes/${categoria.imagen}` : null,
               });
               
           } catch (error) {
