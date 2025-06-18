@@ -21,15 +21,7 @@ export const addToCarrito = async (req, res) => {
         // Incluir imágenes en la consulta del producto
         const product = await Producto.findByPk(productId, {
             include: [
-<<<<<<< HEAD
-<<<<<<< HEAD
                 { model: Imagen, as: "imagenes", attributes: ["nomImagen"] }, // Obtener solo las imágenes
-=======
-                { model: Imagen, as: "imagenes", attributes: ["nomImagen"] },
->>>>>>> parent of e4de726a (cambios carrito)
-=======
-                { model: Imagen, as: "imagenes", attributes: ["nomImagen"] }, // Obtener solo las imágenes
->>>>>>> parent of 538b5f5d (Cambios a carrito)
             ],
         });
 
@@ -42,8 +34,6 @@ export const addToCarrito = async (req, res) => {
             return res.status(404).json({ message: "Talla no encontrada." });
         }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
         if (!req.session) {
             return res.status(500).json({ message: "Error en la sesión del usuario." });
         }
@@ -59,71 +49,24 @@ export const addToCarrito = async (req, res) => {
             const currentQty = req.session.cart[existingProductIndex].quantity;
 
             //Aquí se valida si se pasa de 5
-=======
-        const existingProductIndex = cart.findIndex(p => p.id === product.id && p.tallaId === talla.id);
-=======
-        if (!req.session) {
-            return res.status(500).json({ message: "Error en la sesión del usuario." });
-        }
->>>>>>> parent of 538b5f5d (Cambios a carrito)
-
-        req.session.cart = req.session.cart || [];
-
-        const existingProductIndex = req.session.cart.findIndex(p => p.id === product.id && p.tallaId === talla.id);
-
-        // Seleccionar la imagen del producto (usar la primera imagen si existen)
-        const productImage = product.imagenes && product.imagenes.length > 0 ? product.imagenes[0].nomImagen : 'OIP.jpeg';
-
-        if (existingProductIndex !== -1) {
-            const currentQty = req.session.cart[existingProductIndex].quantity;
-
-<<<<<<< HEAD
->>>>>>> parent of e4de726a (cambios carrito)
-=======
-            //Aquí se valida si se pasa de 5
->>>>>>> parent of 538b5f5d (Cambios a carrito)
             if (currentQty + qty > 5) {
                 return res.status(400).json({
                     message: "No puedes agregar más de 5 unidades del mismo producto con la misma talla."
                 });
             }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
             req.session.cart[existingProductIndex].quantity += qty;
-=======
-            cart[existingProductIndex].quantity += qty;
->>>>>>> parent of e4de726a (cambios carrito)
-=======
-            req.session.cart[existingProductIndex].quantity += qty;
->>>>>>> parent of 538b5f5d (Cambios a carrito)
         } else {
             if (qty > 5) {
                 return res.status(400).json({
                     message: "No puedes agregar más de 5 unidades del mismo producto con la misma talla."
                 });
             }
-<<<<<<< HEAD
-<<<<<<< HEAD
             req.session.cart.push({
                 id: product.id,
                 nombre: product.nombre,
                 precio: product.precio,
                 imagen: productImage, // Asignar la imagen correcta
-=======
-            cart.push({
-                id: product.id,
-                nombre: product.nombre,
-                precio: product.precio,
-                imagen: productImage,
->>>>>>> parent of e4de726a (cambios carrito)
-=======
-            req.session.cart.push({
-                id: product.id,
-                nombre: product.nombre,
-                precio: product.precio,
-                imagen: productImage, // Asignar la imagen correcta
->>>>>>> parent of 538b5f5d (Cambios a carrito)
                 tallaId: talla.id,
                 tallaNombre: talla.nombre,
                 quantity: qty,
@@ -131,10 +74,6 @@ export const addToCarrito = async (req, res) => {
             });
         }
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> parent of 538b5f5d (Cambios a carrito)
         req.session.save(err => {
             if (err) {
                 console.error("Error guardando la sesión:", err);
@@ -142,12 +81,6 @@ export const addToCarrito = async (req, res) => {
             }
             res.json({ message: "Producto agregado al carrito", cart: req.session.cart });
         });
-<<<<<<< HEAD
-=======
-        res.json({ message: "Producto agregado al carrito", cart });
->>>>>>> parent of e4de726a (cambios carrito)
-=======
->>>>>>> parent of 538b5f5d (Cambios a carrito)
 
     } catch (error) {
         console.error("Error en addToCarrito:", error);
@@ -155,9 +88,6 @@ export const addToCarrito = async (req, res) => {
     }
 };
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-
 export const getCarrito = async (req, res) => {
     console.log("Estado actual de la sesión en getCarrito:", req.session);
 
@@ -175,31 +105,6 @@ export const getCarrito = async (req, res) => {
             const productoDB = await Producto.findByPk(item.id);
 
             // Si el producto ya no existe, lo marcamos como no disponible
-=======
-=======
-
->>>>>>> parent of 538b5f5d (Cambios a carrito)
-export const getCarrito = async (req, res) => {
-    console.log("Estado actual de la sesión en getCarrito:", req.session);
-
-    try {
-        if (!req.session) {
-            return res.status(500).json({ message: "Error en la sesión del usuario." });
-        }
-
-        req.session.cart = req.session.cart || [];
-
-        const updatedCart = [];
-
-        for (const item of req.session.cart) {
-    
-            const productoDB = await Producto.findByPk(item.id);
-<<<<<<< HEAD
->>>>>>> parent of e4de726a (cambios carrito)
-=======
-
-            // Si el producto ya no existe, lo marcamos como no disponible
->>>>>>> parent of 538b5f5d (Cambios a carrito)
             const estadoActual = productoDB ? productoDB.estado : 'No disponible';
 
             updatedCart.push({
@@ -207,14 +112,7 @@ export const getCarrito = async (req, res) => {
                 estado: estadoActual  
             });
         }
-<<<<<<< HEAD
-<<<<<<< HEAD
         console.log("Carrito actualizado con estado real:", updatedCart);
-=======
->>>>>>> parent of e4de726a (cambios carrito)
-=======
-        console.log("Carrito actualizado con estado real:", updatedCart);
->>>>>>> parent of 538b5f5d (Cambios a carrito)
 
         res.json({ cart: updatedCart });
     } catch (error) {
@@ -223,31 +121,10 @@ export const getCarrito = async (req, res) => {
     }
 };
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-
-
-
 export const removeFromCarrito = (req, res) => {
     try {
         const { productId, tallaId } = req.body;
         if (!req.session.cart || req.session.cart.length === 0) {
-=======
-export const removeFromCarrito = (req, res) => {
-    try {
-        const { productId, tallaId, cart = [] } = req.body;
-        
-        if (!cart || cart.length === 0) {
->>>>>>> parent of e4de726a (cambios carrito)
-=======
-
-
-
-export const removeFromCarrito = (req, res) => {
-    try {
-        const { productId, tallaId } = req.body;
-        if (!req.session.cart || req.session.cart.length === 0) {
->>>>>>> parent of 538b5f5d (Cambios a carrito)
             return res.status(400).json({ message: 'El carrito está vacío' });
         }
 
@@ -262,15 +139,8 @@ export const removeFromCarrito = (req, res) => {
     } catch (error) {
         res.status(500).json({ message: 'Error en el servidor', error });
     }
+};
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-};
-=======
->>>>>>> parent of e4de726a (cambios carrito)
-=======
-};
->>>>>>> parent of 538b5f5d (Cambios a carrito)
 export const updateCarrito = async (req, res) => {
     try {
         const { productId, tallaId, quantity } = req.body;
@@ -312,13 +182,7 @@ export const updateCarrito = async (req, res) => {
     }
     
 };
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
 
->>>>>>> parent of e4de726a (cambios carrito)
-=======
->>>>>>> parent of 538b5f5d (Cambios a carrito)
 export const removeMultipleFromCarrito = (req, res) => {
     try {
         const { productos } = req.body;
