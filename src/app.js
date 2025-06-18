@@ -7,23 +7,24 @@ import carritosR from './router/Carrito.routes.js';
 import TallaR from './router/Talla.routes.js';
 import resenasR from './router/Resena.routes.js';
 import facturaR from './router/Factura.route.js';
-import sessionMiddleware from './Middleware/sessionConfig.js';
+import sessionMiddleware from './Middleware/sessionConfig.js';  // Asegúrate de que esto esté bien importado
 import cors from 'cors';
 import path from 'path';
 
 const app = express();
 
+// Configuración de CORS para permitir cookies
 app.use(cors({
-    origin: "https://thankful-coast-087ff680f.6.azurestaticapps.net",
-    credentials: true
+    origin: "https://thankful-coast-087ff680f.6.azurestaticapps.net",  // Origen autorizado (Frontend)
+    credentials: true  // Permite el envío de cookies entre dominios
 }));
 
-// Configuración de middlewared
+// Configuración del middleware de sesión (ya con Redis)
 app.use(sessionMiddleware);
 
-app.use(express.json());
+app.use(express.json());  // Para manejar datos en formato JSON
 
-// Configuración de archivos estáticos
+// Configuración de archivos estáticos (solo debes ajustar si lo necesitas)
 const __dirname = path.resolve();
 app.use("/public", express.static(path.join(__dirname, "public")));
 app.use("/imagenes", express.static(path.join(__dirname, "public/ImgCategorias")));
@@ -39,11 +40,12 @@ app.use('/api/v1', recuperacionR);
 app.use('/api/v1', resenasR);
 app.use('/api/v1', facturaR);
 
-// Ruta raíz y manejo de robots.txt
+// Ruta raíz
 app.get('/', (req, res) => {
     res.send('Backend-MrWolf está funcionando');
 });
 
+// Manejo del archivo robots.txt
 app.get('/robots.txt', (req, res) => {
     res.type('text/plain');
     res.send('User-agent: *\nDisallow: /');
@@ -57,4 +59,4 @@ app.use((req, res, next) => {
     res.status(404).json({ error: 'Ruta no encontrada' });
 });
 
-export default app;
+export default app;
