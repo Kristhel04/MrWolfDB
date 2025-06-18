@@ -18,7 +18,7 @@ app.use(cors({
     credentials: true
 }));
 
-// Configuración de middleware
+// Configuración de middlewared
 app.use(sessionMiddleware);
 
 app.use(express.json());
