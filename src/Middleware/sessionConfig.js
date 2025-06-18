@@ -8,10 +8,10 @@ const sessionMiddleware = session({
     saveUninitialized: true,
     cookie: {
         httpOnly: true,
-        secure: false, // Asegúrate de que esté en false en local, pero en producción debe ser true
-        sameSite: "lax", // Cambia a 'none' si usas HTTPS en producción
+        secure: true,           // ✅ importante: true si usas HTTPS
+        sameSite: "none",       // ✅ permite compartir cookies entre dominios
         maxAge: 24 * 60 * 60 * 1000 // 1 día
-    } // 1 día de duración
+    }
 });
 
 export default sessionMiddleware;

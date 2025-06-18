@@ -13,12 +13,14 @@ import path from 'path';
 
 const app = express();
 
-// Configuración de middleware
-app.use(sessionMiddleware);
 app.use(cors({
     origin: "https://thankful-coast-087ff680f.6.azurestaticapps.net",
     credentials: true
 }));
+
+// Configuración de middleware
+app.use(sessionMiddleware);
+
 app.use(express.json());
 
 // Configuración de archivos estáticos
