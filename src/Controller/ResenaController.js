@@ -26,32 +26,32 @@ const ResenaController = {
   // Obtener reseñas por ID de producto
   async getResenasByProducto(req, res) {
     try {
-        const { id } = req.params;
-
-        const productoResenas = await Resena.findAll({
-            where: { id_producto: id },
-            include: [
-                {
-                    model: Usuario,
-                    as: 'usuario',
-                    attributes: ['cedula', 'nombre_usuario', 'nombre_completo'] 
-                },
-                {
-                    model: Producto,
-                    as: 'producto',
-                    attributes: ['id', 'nombre'] 
-                }
-            ],
-        });
-        if (productoResenas.length === 0) {
-            return res.status(404).json({ message: "No se encontraron reseñas para este producto" });
-        }
-
-        res.status(200).json(productoResenas);
+      const { id } = req.params;
+  
+      const productoResenas = await Resena.findAll({
+        where: { id_producto: id },
+        include: [
+          {
+            model: Usuario,
+            as: 'usuario',
+            attributes: ['cedula', 'nombre_usuario', 'nombre_completo'] 
+          },
+          {
+            model: Producto,
+            as: 'producto',
+            attributes: ['id', 'nombre'] 
+          }
+        ],
+      });
+  
+     
+      return res.status(200).json(productoResenas);
+      
     } catch (error) {
-        res.status(500).json({ message: "Error al obtener las reseñas del producto", error });
+      res.status(500).json({ message: "Error al obtener las reseñas del producto", error });
     }
-},
+  },
+  
 
    // Crear nueva reseña (requiere autenticación)
    async create(req, res) {
