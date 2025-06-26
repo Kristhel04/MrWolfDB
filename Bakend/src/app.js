@@ -16,6 +16,9 @@ import cors from 'cors';
 import path from 'path';
 import Factura from './model/FacturaModel.js';
 
+//Tilopay y proceso de pago
+import pagosR from './router/Pago.routes.js'
+
 const app = express();
 //console.log("Cargando middleware de sesión..."); // Agrega esto para depuración
 app.use(sessionMiddleware);
@@ -62,6 +65,8 @@ app.use('/api/v1', carritosR);
 app.use('/api/v1', recuperacionR);
 app.use('/api/v1', resenasR);
 app.use('/api/v1',facturaR);
+app.use('/api/v1',pagosR);
+
 
 
 
