@@ -9,6 +9,7 @@ import Producto from "../model/ProductoModel.js";
 import { fileURLToPath } from 'url';
 import { dirname } from 'path';
 import moment from 'moment';
+import { v4 as uuidv4 } from 'uuid';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -20,54 +21,37 @@ const generarCodigoFactura = () => {
 };
 
 const FacturaController = {
-  async create(req, res) {
+   create: async (req, res) => {
     try {
-      // 1. Verificación más robusta del usuario autenticado
       if (!req.user || !req.user.cedula) {
-        console.error("Error de autenticación - req.user:", req.user);
-        return res.status(401).json({ 
-          message: "No se pudo identificar al usuario. Por favor inicie sesión nuevamente." 
-        });
+        return res.status(401).json({ message: "Debe iniciar sesión para continuar." });
       }
 
-      // 2. Obtenemos los datos del usuario desde el token
       const { cedula } = req.user;
       const productos = req.body.productos;
 
-      console.log("Datos recibidos para factura:", {
-        cedulaUsuario: cedula,
-        productos: productos
-      });
-
-      // 3. Validación de productos
       if (!productos || !Array.isArray(productos) || productos.length === 0) {
-        return res.status(400).json({ 
-          message: "Debe seleccionar al menos un producto para generar la factura." 
-        });
+        return res.status(400).json({ message: "Debe agregar productos para generar la factura." });
       }
 
-      // 4. Buscar al usuario en la base de datos
-      const user = await Usuario.findOne({ 
+      const user = await Usuario.findOne({
         where: { cedula },
         attributes: ['cedula', 'nombre_completo', 'email_facturacion', 'direccion_envio', 'telefono']
       });
 
       if (!user) {
-        console.error("Usuario no encontrado con cédula:", cedula);
-        return res.status(404).json({ 
-          message: "Usuario no registrado en el sistema. Por favor complete su perfil primero." 
-        });
+        return res.status(404).json({ message: "Usuario no registrado." });
       }
 
-      // 5. Cálculos de la factura
       const subTotal = productos.reduce((acc, prod) => acc + (prod.precio * prod.quantity), 0);
       const precioEnvio = 3500;
       const total = subTotal + precioEnvio;
 
-
+      const codigo_factura = 'ORD-' + uuidv4().slice(0, 8).toUpperCase();
       const fechaFormateada = moment.utc().format('YYYY-MM-DD');
+
       const nuevaFactura = await Factura.create({
-        codigo_factura: generarCodigoFactura(),
+        codigo_factura,
         cedula: user.cedula,
         nombre_completo: user.nombre_completo,
         email_usuario: user.email_facturacion,
@@ -75,49 +59,41 @@ const FacturaController = {
         telefono: user.telefono,
         sub_total: subTotal,
         precio_envio: precioEnvio,
-        total: total,
+        total,
+        estado: "Pendiente",
         nombre_pagina: "Mr.Wolf",
-       fecha_emision: fechaFormateada, 
+        fecha_emision: fechaFormateada
       });
-      console.log("ID de factura generada:", nuevaFactura.id);
+
       const idFactura = nuevaFactura.id;
-      // 7. Creación de detalles
+
       const detalles = await Promise.all(
-        productos.map(async (prod) => {
-          return await DetalleFactura.create({
-            id_factura: idFactura,  
-            id_producto: prod.id,
-            talla_id: prod.tallaId,
-            nombre_producto: prod.nombre,
-            precio_unitario: prod.precio,
-            cantidad: prod.quantity,
-            subtotal: prod.precio * prod.quantity,
-          });
-        })
+        productos.map(prod => DetalleFactura.create({
+          id_factura: idFactura,
+          id_producto: prod.id,
+          talla_id: prod.tallaId,
+          nombre_producto: prod.nombre,
+          precio_unitario: prod.precio,
+          cantidad: prod.quantity,
+          subtotal: prod.precio * prod.quantity
+        }))
       );
 
-      // 8. Respuesta exitosa
-      return res.status(201).json({
+      res.status(201).json({
         success: true,
         message: "Factura generada correctamente",
         factura: {
           id: nuevaFactura.id,
-          codigo: nuevaFactura.codigo_factura,
-          total: nuevaFactura.total,
-          fecha: moment.utc(nuevaFactura.fecha_emision).format('DD/MM/YYYY')
-        },
-        productos: detalles.map(d => ({
-          nombre: d.nombre_producto,
-          cantidad: d.cantidad,
-          precio: d.precio_unitario
-        }))
+          codigo_factura,
+          total
+        }
       });
 
     } catch (error) {
-      console.error("Error completo al crear factura:", error);
-      return res.status(500).json({ 
+      console.error("Error en FacturaController.create:", error);
+      res.status(500).json({
         success: false,
-        message: "Error interno al procesar la factura",
+        message: "Error al crear la factura",
         error: process.env.NODE_ENV === 'development' ? error.message : undefined
       });
     }

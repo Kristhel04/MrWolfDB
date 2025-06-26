@@ -1,9 +1,9 @@
 import { Router } from 'express';
-import PagoController from '../Controller/PagoController.js';
+import PagoController from '../Controller/PagoController';
 
 const router = Router();
 
-router.post('/pago', PagoController.crearPago);
-router.post('/webhook', PagoController.webhookTilopay);
+router.post('/pagos', PagoController.crearPago);
+router.post('/pago/webhook', PagoController.webhookTilopay);
 
 export default router;

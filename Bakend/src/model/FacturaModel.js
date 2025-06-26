@@ -1,7 +1,7 @@
 import { Model, DataTypes } from 'sequelize';
 import sequelize from '../baseDatos/connection.js';
 
-class Factura extends Model {}
+class Factura extends Model { }
 
 Factura.init({
   id: {
@@ -45,9 +45,14 @@ Factura.init({
     defaultValue: 'Mr.Wolf'
   },
   fecha_emision: {
-    type: DataTypes.DATEONLY,  
-    defaultValue: DataTypes.NOW,  
-   },
+    type: DataTypes.DATEONLY,
+    defaultValue: DataTypes.NOW,
+  },
+  estado: {
+    type: DataTypes.STRING,
+    defaultValue: 'Pendiente', 
+  }
+
 }, {
   sequelize,
   modelName: 'Factura',
