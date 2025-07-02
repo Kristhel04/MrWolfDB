@@ -1,41 +1,31 @@
-import session from "express-session";
-import connectRedis from "connect-redis";
-import Redis from "ioredis";
+import session from 'express-session';
+import connectSessionSequelize from 'connect-session-sequelize';
+import { sequelize } from './models/index.js'; // tu conexión Sequelize
 
-// Configuración segura para Azure Redis
-const redisClient = new Redis(process.env.REDIS_URL, {
-  tls: {
-    rejectUnauthorized: false // Necesario para Azure Redis
-  },
-  reconnectOnError: (err) => {
-    console.log("Error de Redis:", err.message);
-    return true; // Reconectar automáticamente
-  }
+const SequelizeStore = connectSessionSequelize(session);
+
+const sessionStore = new SequelizeStore({
+  db: sequelize,
+  tableName: 'Sessions', // puedes cambiar el nombre si querés
+  checkExpirationInterval: 15 * 60 * 1000, // limpia sesiones expiradas cada 15 minutos
+  expiration: 2 * 60 * 60 * 1000 // duración de la sesión: 2 horas
 });
 
-// Manejo explícito de errores
-redisClient.on("error", (err) => {
-  console.error("❌ Error en Redis:", err);
-});
-
-const RedisStore = connectRedis(session);
+// crea la tabla automáticamente si no existe
+sessionStore.sync();
 
 const sessionMiddleware = session({
-  store: new RedisStore({ 
-    client: redisClient,
-    disableTouch: true // Mejor rendimiento en Azure
-  }),
   secret: process.env.SESSION_SECRET,
+  store: sessionStore,
   resave: false,
   saveUninitialized: false,
+  rolling: true,
   cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production", // true en Azure
-    sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-    maxAge: 86400000
+    maxAge: 2 * 60 * 60 * 1000 
   }
 });
-
-console.log("✅ Middleware de sesión listo");
 
 export default sessionMiddleware;
