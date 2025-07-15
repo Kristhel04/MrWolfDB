@@ -11,6 +11,8 @@ import { dirname } from 'path';
 import moment from 'moment';
 import { v4 as uuidv4 } from 'uuid';
 
+import { crearPagoTilopay } from "../services/tilopayService.js";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
@@ -21,7 +23,7 @@ const generarCodigoFactura = () => {
 };
 
 const FacturaController = {
-   create: async (req, res) => {
+  create: async (req, res) => {
     try {
       if (!req.user || !req.user.cedula) {
         return res.status(401).json({ message: "Debe iniciar sesión para continuar." });
@@ -79,13 +81,16 @@ const FacturaController = {
         }))
       );
 
+      const checkout_url = await crearPagoTilopay(nuevaFactura);
+
       res.status(201).json({
         success: true,
         message: "Factura generada correctamente",
         factura: {
           id: nuevaFactura.id,
           codigo_factura,
-          total
+          total,
+          checkout_url,
         }
       });
 
@@ -103,47 +108,48 @@ const FacturaController = {
     const userId = req.user.id; // Suponiendo que tienes el ID del usuario en el token JWT
 
     try {
-        // Obtener la factura por ID, incluyendo los detalles de los productos relacionados
-        const factura = await Factura.findByPk(facturaId, {
+      // Obtener la factura por ID, incluyendo los detalles de los productos relacionados
+      const factura = await Factura.findByPk(facturaId, {
+        include: [
+          {
+            model: DetalleFactura, // Relación con DetalleFactura
+            as: 'detalles', // Suponiendo que 'detalles' es el alias
             include: [
-                {
-                    model: DetalleFactura, // Relación con DetalleFactura
-                    as: 'detalles', // Suponiendo que 'detalles' es el alias
-                    include: [
-                        {
-                            model: Producto, // Relación con Producto
-                            as: 'producto', // Suponiendo que 'producto' es el alias
-                            attributes: ['nombre'] // Solo recuperar el nombre del producto
-                        }
-                    ]
-                }
+              {
+                model: Producto, // Relación con Producto
+                as: 'producto', // Suponiendo que 'producto' es el alias
+                attributes: ['nombre'] // Solo recuperar el nombre del producto
+              }
             ]
-        });
+          }
+        ]
+      });
 
-        // Verificar si la factura existe
-        if (!factura) {
-            return res.status(404).json({ message: "Factura no encontrada" });
-        }
+      // Verificar si la factura existe
+      if (!factura) {
+        return res.status(404).json({ message: "Factura no encontrada" });
+      }
 
-        // Verifica que la factura pertenezca al usuario autenticado
-        if (factura.userId !== userId) {
-            return res.status(403).json({ message: "No tienes permiso para acceder a esta factura" });
-        }
+      // Verifica que la factura pertenezca al usuario autenticado
+      if (factura.userId !== userId) {
+        return res.status(403).json({ message: "No tienes permiso para acceder a esta factura" });
+      }
 
-        // Responder con la factura y sus detalles
-        res.status(200).json(factura);
+      // Responder con la factura y sus detalles
+      res.status(200).json(factura);
     } catch (error) {
-        console.error("Error al obtener factura:", error);
-        res.status(500).json({ message: "Error al obtener factura", error });
+      console.error("Error al obtener factura:", error);
+      res.status(500).json({ message: "Error al obtener factura", error });
     }
-},
+  },
 
   async getFacturasUsuario(req, res) {
     try {
       const usuario = req.user;
       const facturas = await Factura.findAll({
-         where: { cedula: usuario.cedula }, 
-         order: [['fecha_emision', 'DESC']], });
+        where: { cedula: usuario.cedula },
+        order: [['fecha_emision', 'DESC']],
+      });
       res.status(200).json(facturas);
     } catch (error) {
       res.status(500).json({ message: "Error al obtener facturas del usuario", error });
@@ -155,7 +161,7 @@ const FacturaController = {
       if (req.user.rol !== "Administrador") {
         return res.status(403).json({ message: "No autorizado" });
       }
-      const facturas = await Factura.findAll({ order: [['fecha_emision', 'DESC']]});
+      const facturas = await Factura.findAll({ order: [['fecha_emision', 'DESC']] });
       res.status(200).json(facturas);
     } catch (error) {
       res.status(500).json({ message: "Error al obtener todas las facturas", error });
@@ -167,11 +173,11 @@ const FacturaController = {
       const { id } = req.params;
       const factura = await Factura.findByPk(id);
       const detalles = await DetalleFactura.findAll({ where: { id_factura: id } });
-  
+
       if (!factura) {
         return res.status(404).json({ message: "Factura no encontrada" });
       }
-  
+
       const doc = new PDFDocument({ margin: 50 });
       const fontPath = path.join(__dirname, "../../public/fonts/DejaVuSans.ttf");
       doc.registerFont("custom", fontPath);
@@ -186,7 +192,7 @@ const FacturaController = {
       const logoPath = path.join(__dirname, "../../public/Tienda/Logo Circular Mr Wolf-Photoroom.png"); // ajusta esta ruta según tu estructura
       doc.image(logoPath, { fit: [100, 100], align: "center" });
       doc.moveDown(1);
-  
+
       // 🧾 ENCABEZADO
       doc.fontSize(18).text("Factura Electrónica - Mr. Wolf", { align: "center" });
       doc.moveDown(0.5);
@@ -195,52 +201,52 @@ const FacturaController = {
       doc.fontSize(10).text(`Instagram: @mrwolf.cr`, { align: "center" });
       doc.fontSize(10).text(`Tel: 2101-9480 / 8557-4555`, { align: "center" });
       doc.moveDown();
-  
+
       // 🧍 DATOS DEL CLIENTE
       doc.fontSize(12).text(`Cliente: ${factura.nombre_completo}`);
       doc.text(`Email: ${factura.email_usuario}`);
       doc.text(`Dirección: ${factura.direccion_envio}`);
       doc.text(`Teléfono: ${factura.telefono}`);
       doc.moveDown();
-  
+
       // 🛍️ DETALLES DE LA FACTURA
       doc.fontSize(12).text("Detalles de la factura:", { underline: true });
       doc.moveDown(0.5);
       doc.text("Producto                      Cantidad     Precio unitario     Subtotal");
-  
+
       detalles.forEach((d) => {
         const subtotal = d.cantidad * d.precio_unitario;
         const linea = `${d.nombre_producto.padEnd(30)} ${String(d.cantidad).padEnd(10)} ₡${d.precio_unitario.toLocaleString("es-CR").padEnd(18)} ₡${subtotal.toLocaleString("es-CR")}`;
         doc.text(linea);
       });
-  
+
       // 💰 RESUMEN
       doc.moveDown();
       doc.text(`Subtotal: ₡${factura.sub_total.toLocaleString("es-CR")}`);
       doc.text(`Envío: ₡${factura.precio_envio.toLocaleString("es-CR")}`);
       doc.text(`Total: ₡${factura.total.toLocaleString("es-CR")}`);
-  
+
       doc.end();
     } catch (error) {
       console.error(error);
       res.status(500).json({ message: "Error al generar el PDF" });
     }
   },
-  async eliminarFactura (req, res) {
+  async eliminarFactura(req, res) {
     try {
       if (req.user.rol !== "Administrador") {
         return res.status(403).json({ message: "No autorizado" });
       }
-  
+
       const { id } = req.params;
       const factura = await Factura.findByPk(id);
       if (!factura) {
         return res.status(404).json({ message: "Factura no encontrada" });
       }
-  
+
       await DetalleFactura.destroy({ where: { id_factura: id } });
       await Factura.destroy({ where: { id } });
-  
+
       return res.status(200).json({ message: "Factura y sus detalles eliminados correctamente" });
     } catch (error) {
       console.error("Error al eliminar la factura:", error);
