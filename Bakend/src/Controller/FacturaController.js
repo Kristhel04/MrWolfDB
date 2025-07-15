@@ -252,7 +252,23 @@ const FacturaController = {
       console.error("Error al eliminar la factura:", error);
       return res.status(500).json({ message: "Error interno al eliminar la factura" });
     }
+  },
+  
+  async verPorCodigo (req, res) {
+  const { codigo_factura } = req.params;
+  try {
+    const factura = await Factura.findOne({ where: { codigo_factura } });
+    if (!factura) {
+      return res.status(404).json({ message: "Factura no encontrada" });
+    }
+
+    res.json(factura);
+  } catch (error) {
+    console.error("Error al obtener factura:", error);
+    res.status(500).json({ message: "Error interno" });
   }
+}
+
 };
 
 export default FacturaController;

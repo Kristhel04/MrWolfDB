@@ -10,6 +10,7 @@ router.get('/admin', authenticateToken, authorizeRole(['Administrador']), Factur
 router.delete('/delete/:id',authenticateToken, authorizeRole(['Administrador']),FacturaController.eliminarFactura)
 // Descargar factura en PDF
 router.get('/pdf/:id',FacturaController.generarFacturaPDF);
+router.get('/factura/estado/:codigo_factura', FacturaController.verPorCodigo);
 
 
 export default router;
